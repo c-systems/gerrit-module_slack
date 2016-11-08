@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Cisco Systems, Inc.
+ * Copyright 2017 Cisco Systems, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -18,8 +18,6 @@
 package com.cisco.gerrit.plugins.slack.message;
 
 import com.cisco.gerrit.plugins.slack.config.ProjectConfig;
-import com.cisco.gerrit.plugins.slack.util.ResourceHelper;
-import com.google.common.base.Ascii;
 import com.google.gerrit.server.events.ReviewerAddedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +28,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Nathan Wall
  */
-public class ReviewerAddedMessageGenerator extends MessageGenerator
+public class ReviewerAddedMessageGenerator implements MessageGenerator
 {
     /**
      * The class logger instance.
@@ -47,7 +45,7 @@ public class ReviewerAddedMessageGenerator extends MessageGenerator
      *
      * @param event The ReviewerAddedEvent instance to generate a message for.
      */
-    protected ReviewerAddedMessageGenerator(ReviewerAddedEvent event,
+    ReviewerAddedMessageGenerator(ReviewerAddedEvent event,
                                             ProjectConfig config)
     {
         if (event == null)
@@ -73,26 +71,19 @@ public class ReviewerAddedMessageGenerator extends MessageGenerator
 
         try
         {
-            String template;
-            template = ResourceHelper.loadNamedResourceAsString(
-                    "basic-message-template.json");
+            MessageTemplate template;
+            template = new MessageTemplate();
 
-            StringBuilder text;
-            text = new StringBuilder();
+            template.setChannel(config.getChannel());
+            template.setName(event.reviewer.get().name);
+            template.setAction("was added to review");
+            template.setNumber(event.change.get().number);
+            template.setProject(event.change.get().project);
+            template.setBranch(event.change.get().branch);
+            template.setUrl(event.change.get().url);
+            template.setMessage(event.change.get().commitMessage.split("\n")[0]);
 
-            text.append(escape(event.reviewer.get().name));
-            text.append(" was added to review\\n>>>");
-            text.append(escape(event.change.get().project));
-            text.append(" (");
-            text.append(escape(event.change.get().branch));
-            text.append("): ");
-            text.append(escape(event.change.get().commitMessage.split("\n")[0]));
-            text.append(" (");
-            text.append(escape(event.change.get().url));
-            text.append(")");
-
-            message = String.format(template, text, config.getChannel(),
-                    config.getUsername());
+            message = template.render();
         }
         catch (Exception e)
         {

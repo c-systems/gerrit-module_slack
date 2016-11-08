@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Cisco Systems, Inc.
+ * Copyright 2017 Cisco Systems, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -24,6 +24,7 @@ import com.google.gerrit.server.config.PluginConfig;
 import com.google.gerrit.server.config.PluginConfigFactory;
 import com.google.gerrit.server.data.AccountAttribute;
 import com.google.gerrit.server.data.ChangeAttribute;
+import com.google.gerrit.server.data.PatchSetAttribute;
 import com.google.gerrit.server.events.CommentAddedEvent;
 import org.junit.Before;
 import org.junit.Test;
@@ -183,6 +184,7 @@ public class CommentAddedMessageGeneratorTest
 
         mockEvent.comment = "This is the first line\nAnd the second line.";
 
+        mockChange.number = 1234;
         mockChange.project = "testproject";
         mockChange.branch = "master";
         mockChange.url = "https://change/";
@@ -197,10 +199,20 @@ public class CommentAddedMessageGeneratorTest
                 mockEvent, config);
 
         String expectedResult;
-        expectedResult = "{\"text\": \"Unit Tester commented to Owner\\n>>>" +
-                "testproject (master): This is the first line\n" +
-                "And the second line. (https://change/)\"," +
-                "\"channel\": \"#testchannel\",\"username\": \"testuser\"}\n";
+        expectedResult = "{\n" +
+                "  \"channel\": \"#testchannel\",\n" +
+                "  \"attachments\": [\n" +
+                "    {\n" +
+                "      \"fallback\": \"Unit Tester commented on - testproject (master) - change 1234 - https://change/\",\n" +
+                "      \"pretext\": \"Unit Tester commented on\",\n" +
+                "      \"title\": \"testproject (master) - change 1234\",\n" +
+                "      \"title_link\": \"https://change/\",\n" +
+                "      \"text\": \"This is the first line\n" +
+                "And the second line.\",\n" +
+                "      \"color\": \"good\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n";
 
         String actualResult;
         actualResult = messageGenerator.generate();
@@ -221,6 +233,7 @@ public class CommentAddedMessageGeneratorTest
                 "sem neque ornare eros, vel sodales magna risus et diam. Maecenas ultricies justo dictum orci " +
                 "scelerisque consequat a vel purus.";
 
+        mockChange.number = 1234;
         mockChange.project = "testproject";
         mockChange.branch = "master";
         mockChange.url = "https://change/";
@@ -235,14 +248,23 @@ public class CommentAddedMessageGeneratorTest
                 mockEvent, config);
 
         String expectedResult;
-        expectedResult = "{\"text\": \"Unit Tester commented to Owner\\n>>>" +
-                "testproject (master): " + mockEvent.comment.substring(0, 197) + "... (https://change/)\"," +
-                "\"channel\": \"#testchannel\",\"username\": \"testuser\"}\n";
+        expectedResult = "{\n" +
+                "  \"channel\": \"#testchannel\",\n" +
+                "  \"attachments\": [\n" +
+                "    {\n" +
+                "      \"fallback\": \"Unit Tester commented on - testproject (master) - change 1234 - https://change/\",\n" +
+                "      \"pretext\": \"Unit Tester commented on\",\n" +
+                "      \"title\": \"testproject (master) - change 1234\",\n" +
+                "      \"title_link\": \"https://change/\",\n" +
+                "      \"text\": \"" + mockEvent.comment.substring(0, 197) + "...\",\n" +
+                "      \"color\": \"good\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n";
 
         String actualResult;
         actualResult = messageGenerator.generate();
 
         assertThat(actualResult, is(equalTo(expectedResult)));
     }
-
 }

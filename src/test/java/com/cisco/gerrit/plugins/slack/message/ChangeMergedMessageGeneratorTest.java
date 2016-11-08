@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Cisco Systems, Inc.
+ * Copyright 2017 Cisco Systems, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -24,6 +24,7 @@ import com.google.gerrit.server.config.PluginConfig;
 import com.google.gerrit.server.config.PluginConfigFactory;
 import com.google.gerrit.server.data.AccountAttribute;
 import com.google.gerrit.server.data.ChangeAttribute;
+import com.google.gerrit.server.data.PatchSetAttribute;
 import com.google.gerrit.server.events.ChangeMergedEvent;
 import org.junit.Before;
 import org.junit.Test;
@@ -117,7 +118,7 @@ public class ChangeMergedMessageGeneratorTest
         // Setup mocks
         ProjectConfig config = getConfig();
         mockEvent.change = Suppliers.ofInstance(mockChange);
-        mockChange.commitMessage = "This is a title\nAnd a the body.";
+        mockChange.commitMessage = "This is a title\nand a the body.";
 
         // Test
         MessageGenerator messageGenerator;
@@ -133,7 +134,7 @@ public class ChangeMergedMessageGeneratorTest
         // Setup mocks
         ProjectConfig config = getConfig();
         mockEvent.change = Suppliers.ofInstance(mockChange);
-        mockChange.commitMessage = "WIP:This is a title\nAnd a the body.";
+        mockChange.commitMessage = "WIP:This is a title\nand a the body.";
 
         // Test
         MessageGenerator messageGenerator;
@@ -149,7 +150,7 @@ public class ChangeMergedMessageGeneratorTest
         // Setup mocks
         ProjectConfig config = getConfig(false /* publishOnChangeMerged */);
         mockEvent.change = Suppliers.ofInstance(mockChange);
-        mockChange.commitMessage = "This is a title\nAnd a the body.";
+        mockChange.commitMessage = "This is a title\nand a the body.";
 
         // Test
         MessageGenerator messageGenerator;
@@ -163,8 +164,7 @@ public class ChangeMergedMessageGeneratorTest
     public void handlesInvalidIgnorePatterns() throws Exception
     {
         ProjectConfig config = getConfig();
-        when(mockPluginConfig.getString("ignore", ""))
-                .thenReturn(null);
+        when(mockPluginConfig.getString("ignore", "")).thenReturn(null);
 
         // Test
         MessageGenerator messageGenerator;
@@ -179,13 +179,15 @@ public class ChangeMergedMessageGeneratorTest
     {
         // Setup mocks
         ProjectConfig config = getConfig();
+
         mockEvent.change = Suppliers.ofInstance(mockChange);
         mockEvent.submitter = Suppliers.ofInstance(mockAccount);
 
+        mockChange.number = 1234;
         mockChange.project = "testproject";
         mockChange.branch = "master";
         mockChange.url = "https://change/";
-        mockChange.commitMessage = "This is a title\nAnd a the body.";
+        mockChange.commitMessage = "This is a title\nand a the body.";
 
         mockAccount.name = "Unit Tester";
 
@@ -195,9 +197,19 @@ public class ChangeMergedMessageGeneratorTest
                 mockEvent, config);
 
         String expectedResult;
-        expectedResult = "{\"text\": \"Unit Tester merged\\n>>>" +
-                "testproject (master): This is a title (https://change/)\"," +
-                "\"channel\": \"#testchannel\",\"username\": \"testuser\"}\n";
+        expectedResult = "{\n" +
+                "  \"channel\": \"#testchannel\",\n" +
+                "  \"attachments\": [\n" +
+                "    {\n" +
+                "      \"fallback\": \"Unit Tester merged - testproject (master) - change 1234 - https://change/\",\n" +
+                "      \"pretext\": \"Unit Tester merged\",\n" +
+                "      \"title\": \"testproject (master) - change 1234\",\n" +
+                "      \"title_link\": \"https://change/\",\n" +
+                "      \"text\": \"This is a title\",\n" +
+                "      \"color\": \"good\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n";
 
         String actualResult;
         actualResult = messageGenerator.generate();

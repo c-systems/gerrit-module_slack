@@ -15,50 +15,27 @@
  *
  */
 
-package com.cisco.gerrit.plugins.slack.client;
+package com.cisco.gerrit.plugins.slack.message;
 
-import com.cisco.gerrit.plugins.slack.message.MessageTemplate;
-import com.cisco.gerrit.plugins.slack.util.ResourceHelper;
 import org.junit.Test;
 
-import java.io.InputStream;
-import java.util.Properties;
-
-import static org.junit.Assert.assertTrue;
-
-public class WebhookClientIntegrationTest
+public class MessageTemplateTest
 {
     @Test
-    public void canPublishMessage() throws Exception
+    public void rendersTemplate() throws Exception
     {
-        WebhookClient client;
-        client = new WebhookClient();
-
-        InputStream testProperties;
-        testProperties = ResourceHelper.loadNamedResourceAsStream(
-                "test.properties");
-
-        Properties properties;
-        properties = new Properties();
-        properties.load(testProperties);
-
-        testProperties.close();
-
         MessageTemplate template;
         template = new MessageTemplate();
 
         template.setChannel("general");
-        template.setName("Integration Tester");
+        template.setName("Mr. Developer");
         template.setAction("proposed");
         template.setNumber(1234);
         template.setProject("project");
         template.setBranch("master");
-        template.setUrl("http://gerrit/1234");
+        template.setUrl("https://gerrit-review.googlesource.com/#/admin/projects/plugins/slack-integration");
         template.setMessage("This is a really great commit.");
 
-        String webhookUrl;
-        webhookUrl = properties.getProperty("webhook-url");
-
-        assertTrue(client.publish(template.render(), webhookUrl));
+        System.out.println(template.render());
     }
 }

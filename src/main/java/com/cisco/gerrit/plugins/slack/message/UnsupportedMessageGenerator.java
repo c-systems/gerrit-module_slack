@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Cisco Systems, Inc.
+ * Copyright 2017 Cisco Systems, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -27,13 +27,12 @@ import com.google.gerrit.server.events.Event;
  *
  * @author Matthew Montgomery
  */
-public class UnsupportedMessageGenerator extends MessageGenerator
+public class UnsupportedMessageGenerator implements MessageGenerator
 {
     private ProjectConfig config;
     private Event event;
 
-    protected UnsupportedMessageGenerator(Event event,
-            ProjectConfig config)
+    UnsupportedMessageGenerator(Event event, ProjectConfig config)
     {
         if (event == null)
         {

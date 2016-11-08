@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Cisco Systems, Inc.
+ * Copyright 2017 Cisco Systems, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -24,6 +24,7 @@ import com.google.gerrit.server.config.PluginConfig;
 import com.google.gerrit.server.config.PluginConfigFactory;
 import com.google.gerrit.server.data.AccountAttribute;
 import com.google.gerrit.server.data.ChangeAttribute;
+import com.google.gerrit.server.data.PatchSetAttribute;
 import com.google.gerrit.server.events.ReviewerAddedEvent;
 import org.junit.Before;
 import org.junit.Test;
@@ -163,6 +164,7 @@ public class ReviewerAddedMessageGeneratorTest
         mockEvent.change = Suppliers.ofInstance(mockChange);
         mockEvent.reviewer = Suppliers.ofInstance(mockAccount);
 
+        mockChange.number = 1234;
         mockChange.project = "testproject";
         mockChange.branch = "master";
         mockChange.commitMessage = "This is the first line\nAnd the second line.";
@@ -176,10 +178,19 @@ public class ReviewerAddedMessageGeneratorTest
                 mockEvent, config);
 
         String expectedResult;
-        expectedResult = "{\"text\": \"Unit Tester was added to review\\n>>>" +
-                "testproject (master): This is the first line" +
-                " (https://change/)\",\"channel\": \"#testchannel\"," +
-                "\"username\": \"testuser\"}\n";
+        expectedResult = "{\n" +
+                "  \"channel\": \"#testchannel\",\n" +
+                "  \"attachments\": [\n" +
+                "    {\n" +
+                "      \"fallback\": \"Unit Tester was added to review - testproject (master) - change 1234 - https://change/\",\n" +
+                "      \"pretext\": \"Unit Tester was added to review\",\n" +
+                "      \"title\": \"testproject (master) - change 1234\",\n" +
+                "      \"title_link\": \"https://change/\",\n" +
+                "      \"text\": \"This is the first line\",\n" +
+                "      \"color\": \"good\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n";
 
         String actualResult;
         actualResult = messageGenerator.generate();
