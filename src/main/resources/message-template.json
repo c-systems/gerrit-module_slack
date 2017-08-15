@@ -2,7 +2,7 @@
   "channel": "#%1$s",
   "attachments": [
     {
-      "fallback": "%2$s %3$s - %4$s (%5$s) - change %6$s - %7$s",
+      "fallback": "%2$s %3$s - %4$s (%5$s) - %7$s - %8$s",
       "pretext": "%2$s %3$s",
       "title": "%4$s (%5$s) - change %6$s",
       "title_link": "%7$s",
