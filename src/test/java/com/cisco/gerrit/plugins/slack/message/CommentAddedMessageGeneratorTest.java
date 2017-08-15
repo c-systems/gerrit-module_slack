@@ -203,7 +203,7 @@ public class CommentAddedMessageGeneratorTest
                 "  \"channel\": \"#testchannel\",\n" +
                 "  \"attachments\": [\n" +
                 "    {\n" +
-                "      \"fallback\": \"Unit Tester commented on - testproject (master) - change 1234 - https://change/\",\n" +
+                "      \"fallback\": \"Unit Tester commented on - testproject (master) - https://change/ - This is the first line\nAnd the second line.\",\n" +
                 "      \"pretext\": \"Unit Tester commented on\",\n" +
                 "      \"title\": \"testproject (master) - change 1234\",\n" +
                 "      \"title_link\": \"https://change/\",\n" +
@@ -252,7 +252,7 @@ public class CommentAddedMessageGeneratorTest
                 "  \"channel\": \"#testchannel\",\n" +
                 "  \"attachments\": [\n" +
                 "    {\n" +
-                "      \"fallback\": \"Unit Tester commented on - testproject (master) - change 1234 - https://change/\",\n" +
+                "      \"fallback\": \"Unit Tester commented on - testproject (master) - https://change/ - " + mockEvent.comment.substring(0, 197) + "...\",\n" +
                 "      \"pretext\": \"Unit Tester commented on\",\n" +
                 "      \"title\": \"testproject (master) - change 1234\",\n" +
                 "      \"title_link\": \"https://change/\",\n" +

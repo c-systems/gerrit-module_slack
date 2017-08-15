@@ -211,7 +211,7 @@ public class PatchSetCreatedMessageGeneratorTest
                 "  \"channel\": \"#testchannel\",\n" +
                 "  \"attachments\": [\n" +
                 "    {\n" +
-                "      \"fallback\": \"Unit Tester proposed - testproject (master) - change 1234 - https://change/\",\n" +
+                "      \"fallback\": \"Unit Tester proposed - testproject (master) - https://change/ - This is a title\",\n" +
                 "      \"pretext\": \"Unit Tester proposed\",\n" +
                 "      \"title\": \"testproject (master) - change 1234\",\n" +
                 "      \"title_link\": \"https://change/\",\n" +

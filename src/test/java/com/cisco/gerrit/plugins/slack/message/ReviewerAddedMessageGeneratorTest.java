@@ -182,7 +182,7 @@ public class ReviewerAddedMessageGeneratorTest
                 "  \"channel\": \"#testchannel\",\n" +
                 "  \"attachments\": [\n" +
                 "    {\n" +
-                "      \"fallback\": \"Unit Tester was added to review - testproject (master) - change 1234 - https://change/\",\n" +
+                "      \"fallback\": \"Unit Tester was added to review - testproject (master) - https://change/ - This is the first line\",\n" +
                 "      \"pretext\": \"Unit Tester was added to review\",\n" +
                 "      \"title\": \"testproject (master) - change 1234\",\n" +
                 "      \"title_link\": \"https://change/\",\n" +

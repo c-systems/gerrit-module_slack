@@ -201,7 +201,7 @@ public class ChangeMergedMessageGeneratorTest
                 "  \"channel\": \"#testchannel\",\n" +
                 "  \"attachments\": [\n" +
                 "    {\n" +
-                "      \"fallback\": \"Unit Tester merged - testproject (master) - change 1234 - https://change/\",\n" +
+                "      \"fallback\": \"Unit Tester merged - testproject (master) - https://change/ - This is a title\",\n" +
                 "      \"pretext\": \"Unit Tester merged\",\n" +
                 "      \"title\": \"testproject (master) - change 1234\",\n" +
                 "      \"title_link\": \"https://change/\",\n" +
