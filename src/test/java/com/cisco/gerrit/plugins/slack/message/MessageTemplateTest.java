@@ -27,15 +27,13 @@ public class MessageTemplateTest
         MessageTemplate template;
         template = new MessageTemplate();
 
-        template.setChannel("general");
-        template.setName("Mr. Developer");
+        template.setChannel("testchannel");
+        template.setName("Unit Tester");
         template.setAction("proposed");
-        template.setNumber(1234);
         template.setProject("project");
         template.setBranch("master");
-        template.setUrl("https://gerrit-review.googlesource.com/#/admin/projects/plugins/slack-integration");
+        template.setUrl("https://change/");
+        template.setNumber(1234);
         template.setMessage("This is a really great commit.");
-
-        System.out.println(template.render());
     }
 }

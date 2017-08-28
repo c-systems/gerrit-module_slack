@@ -2,12 +2,12 @@
   "channel": "#%1$s",
   "attachments": [
     {
-      "fallback": "%2$s %3$s - %4$s (%5$s) - %7$s - %8$s",
-      "pretext": "%2$s %3$s",
-      "title": "%4$s (%5$s) - change %6$s",
-      "title_link": "%7$s",
-      "text": "%8$s",
-      "color": "%9$s"
+      "fallback": "%2$s %3$s %4$s (%5$s) %6$s: %8$s",
+      "pretext": "%2$s %3$s <%6$s|%4$s (%5$s) change %7$s>",
+      "title": "%8$s",
+      "title_link": "%6$s",
+      "text": "%9$s",
+      "color": "%10$s"
     }
   ]
 }

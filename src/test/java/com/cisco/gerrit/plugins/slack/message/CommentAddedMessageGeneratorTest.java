@@ -24,7 +24,6 @@ import com.google.gerrit.server.config.PluginConfig;
 import com.google.gerrit.server.config.PluginConfigFactory;
 import com.google.gerrit.server.data.AccountAttribute;
 import com.google.gerrit.server.data.ChangeAttribute;
-import com.google.gerrit.server.data.PatchSetAttribute;
 import com.google.gerrit.server.events.CommentAddedEvent;
 import org.junit.Before;
 import org.junit.Test;
@@ -182,7 +181,7 @@ public class CommentAddedMessageGeneratorTest
         mockEvent.change = Suppliers.ofInstance(mockChange);
         mockEvent.author = Suppliers.ofInstance(mockAccount);
 
-        mockEvent.comment = "This is the first line\nAnd the second line.";
+        mockEvent.comment = "This is the comment body.";
 
         mockChange.number = 1234;
         mockChange.project = "testproject";
@@ -190,6 +189,8 @@ public class CommentAddedMessageGeneratorTest
         mockChange.url = "https://change/";
         mockChange.owner = mockOwner;
         mockOwner.name = "Owner";
+
+        mockChange.commitMessage = "This is the title\nThis is the message body.";
 
         mockAccount.name = "Unit Tester";
 
@@ -203,60 +204,11 @@ public class CommentAddedMessageGeneratorTest
                 "  \"channel\": \"#testchannel\",\n" +
                 "  \"attachments\": [\n" +
                 "    {\n" +
-                "      \"fallback\": \"Unit Tester commented on - testproject (master) - https://change/ - This is the first line\nAnd the second line.\",\n" +
-                "      \"pretext\": \"Unit Tester commented on\",\n" +
-                "      \"title\": \"testproject (master) - change 1234\",\n" +
+                "      \"fallback\": \"Unit Tester commented on testproject (master) https://change/: This is the title\",\n" +
+                "      \"pretext\": \"Unit Tester commented on <https://change/|testproject (master) change 1234>\",\n" +
+                "      \"title\": \"This is the title\",\n" +
                 "      \"title_link\": \"https://change/\",\n" +
-                "      \"text\": \"This is the first line\n" +
-                "And the second line.\",\n" +
-                "      \"color\": \"good\"\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}\n";
-
-        String actualResult;
-        actualResult = messageGenerator.generate();
-
-        assertThat(actualResult, is(equalTo(expectedResult)));
-    }
-
-    @Test
-    public void generatesExpectedMessageForLongComment() throws Exception
-    {
-        // Setup mocks
-        ProjectConfig config = getConfig();
-        mockEvent.change = Suppliers.ofInstance(mockChange);
-        mockEvent.author = Suppliers.ofInstance(mockAccount);
-
-        mockEvent.comment = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
-                "Integer tristique ligula nec dapibus lobortis. Nulla venenatis, lacus quis vulputate volutpat, " +
-                "sem neque ornare eros, vel sodales magna risus et diam. Maecenas ultricies justo dictum orci " +
-                "scelerisque consequat a vel purus.";
-
-        mockChange.number = 1234;
-        mockChange.project = "testproject";
-        mockChange.branch = "master";
-        mockChange.url = "https://change/";
-        mockChange.owner = mockOwner;
-        mockOwner.name = "Owner";
-
-        mockAccount.name = "Unit Tester";
-
-        // Test
-        MessageGenerator messageGenerator;
-        messageGenerator = MessageGeneratorFactory.newInstance(
-                mockEvent, config);
-
-        String expectedResult;
-        expectedResult = "{\n" +
-                "  \"channel\": \"#testchannel\",\n" +
-                "  \"attachments\": [\n" +
-                "    {\n" +
-                "      \"fallback\": \"Unit Tester commented on - testproject (master) - https://change/ - " + mockEvent.comment.substring(0, 197) + "...\",\n" +
-                "      \"pretext\": \"Unit Tester commented on\",\n" +
-                "      \"title\": \"testproject (master) - change 1234\",\n" +
-                "      \"title_link\": \"https://change/\",\n" +
-                "      \"text\": \"" + mockEvent.comment.substring(0, 197) + "...\",\n" +
+                "      \"text\": \"This is the comment body.\",\n" +
                 "      \"color\": \"good\"\n" +
                 "    }\n" +
                 "  ]\n" +

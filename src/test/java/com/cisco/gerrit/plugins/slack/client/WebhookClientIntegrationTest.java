@@ -50,11 +50,50 @@ public class WebhookClientIntegrationTest
         template.setChannel("general");
         template.setName("Integration Tester");
         template.setAction("proposed");
-        template.setNumber(1234);
         template.setProject("project");
         template.setBranch("master");
         template.setUrl("http://gerrit/1234");
-        template.setMessage("This is a really great commit.");
+        template.setNumber(1234);
+        template.setTitle("Adds a test commit message");
+
+        String webhookUrl;
+        webhookUrl = properties.getProperty("webhook-url");
+
+        assertTrue(client.publish(template.render(), webhookUrl));
+    }
+
+    @Test
+    public void canPublishMessageWithLongMessage() throws Exception
+    {
+        WebhookClient client;
+        client = new WebhookClient();
+
+        InputStream testProperties;
+        testProperties = ResourceHelper.loadNamedResourceAsStream(
+                "test.properties");
+
+        Properties properties;
+        properties = new Properties();
+        properties.load(testProperties);
+
+        testProperties.close();
+
+        MessageTemplate template;
+        template = new MessageTemplate();
+
+        template.setChannel("general");
+        template.setName("Integration Tester");
+        template.setAction("commented on");
+        template.setProject("project");
+        template.setBranch("master");
+        template.setUrl("http://gerrit/1234");
+        template.setNumber(1234);
+        template.setTitle("Adds a test commit message");
+        template.setMessage("It provides a bunch of really great things. " +
+                "I am mostly trying to fill out a really long comment to " +
+                "test message rendering. Slack should do the right thing " +
+                "but this will be on multiple lines in IRC.\n\n\n\n\n" +
+                "This is hidden.");
 
         String webhookUrl;
         webhookUrl = properties.getProperty("webhook-url");

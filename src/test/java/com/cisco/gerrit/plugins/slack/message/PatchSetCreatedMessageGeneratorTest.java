@@ -24,7 +24,6 @@ import com.google.gerrit.server.config.PluginConfig;
 import com.google.gerrit.server.config.PluginConfigFactory;
 import com.google.gerrit.server.data.AccountAttribute;
 import com.google.gerrit.server.data.ChangeAttribute;
-import com.google.gerrit.server.data.PatchSetAttribute;
 import com.google.gerrit.server.events.PatchSetCreatedEvent;
 import org.junit.Before;
 import org.junit.Test;
@@ -197,7 +196,7 @@ public class PatchSetCreatedMessageGeneratorTest
         mockChange.project = "testproject";
         mockChange.branch = "master";
         mockChange.url = "https://change/";
-        mockChange.commitMessage = "This is a title\nand a the body.";
+        mockChange.commitMessage = "This is the title\nThis is the message body.";
 
         mockAccount.name = "Unit Tester";
 
@@ -211,11 +210,11 @@ public class PatchSetCreatedMessageGeneratorTest
                 "  \"channel\": \"#testchannel\",\n" +
                 "  \"attachments\": [\n" +
                 "    {\n" +
-                "      \"fallback\": \"Unit Tester proposed - testproject (master) - https://change/ - This is a title\",\n" +
-                "      \"pretext\": \"Unit Tester proposed\",\n" +
-                "      \"title\": \"testproject (master) - change 1234\",\n" +
+                "      \"fallback\": \"Unit Tester proposed testproject (master) https://change/: This is the title\",\n" +
+                "      \"pretext\": \"Unit Tester proposed <https://change/|testproject (master) change 1234>\",\n" +
+                "      \"title\": \"This is the title\",\n" +
                 "      \"title_link\": \"https://change/\",\n" +
-                "      \"text\": \"This is a title\",\n" +
+                "      \"text\": \"\",\n" +
                 "      \"color\": \"good\"\n" +
                 "    }\n" +
                 "  ]\n" +

@@ -24,7 +24,6 @@ import com.google.gerrit.server.config.PluginConfig;
 import com.google.gerrit.server.config.PluginConfigFactory;
 import com.google.gerrit.server.data.AccountAttribute;
 import com.google.gerrit.server.data.ChangeAttribute;
-import com.google.gerrit.server.data.PatchSetAttribute;
 import com.google.gerrit.server.events.ReviewerAddedEvent;
 import org.junit.Before;
 import org.junit.Test;
@@ -167,7 +166,7 @@ public class ReviewerAddedMessageGeneratorTest
         mockChange.number = 1234;
         mockChange.project = "testproject";
         mockChange.branch = "master";
-        mockChange.commitMessage = "This is the first line\nAnd the second line.";
+        mockChange.commitMessage = "This is the title\nThis is the message body.";
         mockChange.url = "https://change/";
 
         mockAccount.name = "Unit Tester";
@@ -182,11 +181,11 @@ public class ReviewerAddedMessageGeneratorTest
                 "  \"channel\": \"#testchannel\",\n" +
                 "  \"attachments\": [\n" +
                 "    {\n" +
-                "      \"fallback\": \"Unit Tester was added to review - testproject (master) - https://change/ - This is the first line\",\n" +
-                "      \"pretext\": \"Unit Tester was added to review\",\n" +
-                "      \"title\": \"testproject (master) - change 1234\",\n" +
+                "      \"fallback\": \"Unit Tester was added to review testproject (master) https://change/: This is the title\",\n" +
+                "      \"pretext\": \"Unit Tester was added to review <https://change/|testproject (master) change 1234>\",\n" +
+                "      \"title\": \"This is the title\",\n" +
                 "      \"title_link\": \"https://change/\",\n" +
-                "      \"text\": \"This is the first line\",\n" +
+                "      \"text\": \"\",\n" +
                 "      \"color\": \"good\"\n" +
                 "    }\n" +
                 "  ]\n" +

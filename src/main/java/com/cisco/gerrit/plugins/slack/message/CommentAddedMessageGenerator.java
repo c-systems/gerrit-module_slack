@@ -18,10 +18,11 @@
 package com.cisco.gerrit.plugins.slack.message;
 
 import com.cisco.gerrit.plugins.slack.config.ProjectConfig;
-import com.google.common.base.Ascii;
 import com.google.gerrit.server.events.CommentAddedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.commons.lang.StringUtils.substringBefore;
 
 /**
  * A specific MessageGenerator implementation that can generate a message for
@@ -71,6 +72,9 @@ public class CommentAddedMessageGenerator implements MessageGenerator
         String message;
         message = "";
 
+        LOGGER.info(substringBefore(event.change.get().commitMessage, "\n"));
+        LOGGER.info(event.comment);
+
         try
         {
             MessageTemplate template;
@@ -79,11 +83,12 @@ public class CommentAddedMessageGenerator implements MessageGenerator
             template.setChannel(config.getChannel());
             template.setName(event.author.get().name);
             template.setAction("commented on");
-            template.setNumber(event.change.get().number);
             template.setProject(event.change.get().project);
             template.setBranch(event.change.get().branch);
             template.setUrl(event.change.get().url);
-            template.setMessage(Ascii.truncate(event.comment, 200, "..."));
+            template.setNumber(event.change.get().number);
+            template.setTitle(substringBefore(event.change.get().commitMessage, "\n"));
+            template.setMessage(event.comment);
 
             message = template.render();
         }

@@ -38,16 +38,17 @@ public class MessageTemplate
     private String channel;
     private String name;
     private String action;
-    private int number;
     private String project;
     private String branch;
     private String url;
+    private int number;
+    private String title;
     private String message;
 
 
     public String getChannel()
     {
-        return escape(channel);
+        return clean(channel);
     }
 
     public void setChannel(String channel)
@@ -57,7 +58,7 @@ public class MessageTemplate
 
     public String getName()
     {
-        return escape(name);
+        return clean(name);
     }
 
     public void setName(String name)
@@ -67,12 +68,42 @@ public class MessageTemplate
 
     public String getAction()
     {
-        return escape(action);
+        return clean(action);
     }
 
     public void setAction(String action)
     {
         this.action = action;
+    }
+
+    public String getProject()
+    {
+        return clean(project);
+    }
+
+    public void setProject(String project)
+    {
+        this.project = project;
+    }
+
+    public String getBranch()
+    {
+        return clean(branch);
+    }
+
+    public void setBranch(String branch)
+    {
+        this.branch = branch;
+    }
+
+    public String getUrl()
+    {
+        return clean(url);
+    }
+
+    public void setUrl(String url)
+    {
+        this.url = url;
     }
 
     public int getNumber()
@@ -85,44 +116,24 @@ public class MessageTemplate
         this.number = number;
     }
 
-    public String getProject()
+    public String getTitle()
     {
-        return escape(project);
+        return clean(title);
     }
 
-    public void setProject(String project)
+    public void setTitle(String title)
     {
-        this.project = project;
-    }
-
-    public String getBranch()
-    {
-        return escape(branch);
-    }
-
-    public void setBranch(String branch)
-    {
-        this.branch = branch;
+        this.title = title;
     }
 
     public String getMessage()
     {
-        return escape(message);
+        return clean(message);
     }
 
     public void setMessage(String message)
     {
         this.message = message;
-    }
-
-    public String getUrl()
-    {
-        return escape(url);
-    }
-
-    public void setUrl(String url)
-    {
-        this.url = url;
     }
 
 
@@ -143,8 +154,8 @@ public class MessageTemplate
                     "message-template.json");
 
             result = String.format(template, getChannel(), getName(),
-                    getAction(), getProject(), getBranch(), getNumber(),
-                    getUrl(), getMessage(), "good");
+                    getAction(), getProject(), getBranch(), getUrl(),
+                    getNumber(), getTitle(), getMessage(), "good");
         }
         catch (IOException e)
         {
@@ -155,19 +166,25 @@ public class MessageTemplate
     }
 
     /**
-     * Escapes the double quote character.
+     * Cleans up the provided string to make it acceptable for using in a
+     * Slack message template. It escapes any double quote characters,
+     * trims all leading/trailing whitespace and returns an empty string if
+     * the provided string was null.
      *
-     * @param str The message in which to search escape double quote
-     *            characters
+     * @param str The string to process.
      *
      * @return The message with all occurrences of the double quote character
-     * escaped.
+     * escaped and leading/trailing whitespace trimmed
      */
-    private String escape(String str)
+    private String clean(String str)
     {
         if (str != null)
         {
-            str = str.replace("\"", "\\\"");
+            str = str.replace("\"", "\\\"").trim();
+        }
+        else
+        {
+            str = "";
         }
 
         return str;

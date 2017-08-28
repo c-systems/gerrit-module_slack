@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.commons.lang.StringUtils.substringBefore;
+
 /**
  * A specific MessageGenerator implementation that can generate a message for a
  * patchset created event.
@@ -106,7 +108,7 @@ public class PatchSetCreatedMessageGenerator implements MessageGenerator
             template.setProject(event.change.get().project);
             template.setBranch(event.change.get().branch);
             template.setUrl(event.change.get().url);
-            template.setMessage(event.change.get().commitMessage.split("\n")[0]);
+            template.setTitle(substringBefore(event.change.get().commitMessage, "\n"));
 
             message = template.render();
         }

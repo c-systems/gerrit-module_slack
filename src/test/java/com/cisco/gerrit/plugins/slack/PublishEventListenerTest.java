@@ -43,7 +43,7 @@ public class PublishEventListenerTest
     @Test
     public void handlesPatchSetCreatedEvents() throws Exception
     {
-        // Wat? Placeholder, as I need to think about out how to test...
+        // TODO: Add actual tests here
         assertTrue(true);
     }
 }
