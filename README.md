@@ -103,6 +103,9 @@ The following configuration options are available
         A "dotall" enabled regular expression pattern that, when matches
         against a commit message, will prevent the publishing of patchset
         created event messages (defaults to an empty string).
+    ignore-unchanged-patch-set - boolean (true/false)
+        Whether a Slack notification about a new patch-set shouldn't be
+        published when code didn't change (defaults to true).
     publish-on-patch-set-created - boolean (true/false)
         Whether a Slack notification should be published when a new patch set
         is created.
