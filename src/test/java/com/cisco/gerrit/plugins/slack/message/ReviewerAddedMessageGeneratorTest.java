@@ -69,7 +69,11 @@ public class ReviewerAddedMessageGeneratorTest
         when(Project.NameKey.parse(PROJECT_NAME)).thenReturn(mockNameKey);
     }
 
-    private ProjectConfig getConfig(boolean publishOnReviewerAdded) throws Exception
+    private ProjectConfig getConfig(
+        boolean publishOnReviewerAdded,
+        boolean ignoreWorkInProgressPatchSet,
+        boolean ignorePrivatePatchSet)
+        throws Exception
     {
         Project.NameKey projectNameKey;
         projectNameKey = Project.NameKey.parse(PROJECT_NAME);
@@ -91,13 +95,30 @@ public class ReviewerAddedMessageGeneratorTest
                 .thenReturn("^WIP.*");
         when(mockPluginConfig.getBoolean("publish-on-reviewer-added", true))
                 .thenReturn(publishOnReviewerAdded);
+        when(mockPluginConfig.getBoolean("ignore-wip-patch-set", true))
+                .thenReturn(ignoreWorkInProgressPatchSet);
+        when(mockPluginConfig.getBoolean("ignore-private-patch-set", true))
+                .thenReturn(ignorePrivatePatchSet);
 
         return new ProjectConfig(mockConfigFactory, PROJECT_NAME);
     }
 
     private ProjectConfig getConfig() throws Exception
     {
-        return getConfig(true /* publishOnReviewerAdded */);
+        return getConfig(
+            true /* publishOnReviewerAdded */,
+            true /* ignoreWorkInProgressPatchSet */,
+            true /* ignorePrivatePatchSet */
+        );
+    }
+
+    private ProjectConfig getConfig(boolean publishOnReviewerAdded) throws Exception
+    {
+        return getConfig(
+            publishOnReviewerAdded,
+            true /* ignoreWorkInProgressPatchSet */,
+            true /* ignorePrivatePatchSet */
+        );
     }
 
     @Test
@@ -146,6 +167,74 @@ public class ReviewerAddedMessageGeneratorTest
         ProjectConfig config = getConfig();
         when(mockPluginConfig.getString("ignore", ""))
                 .thenReturn(null);
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(true));
+    }
+
+    @Test
+    public void doesNotPublishWhenWorkInProgress() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig();
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockChange.wip = true;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(false));
+    }
+
+    @Test
+    public void doesNotPublishWhenPrivate() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig();
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockChange.isPrivate = true;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(false));
+    }
+
+    @Test
+    public void publishesWhenWorkInProgress() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig(true /* publishOnReviewerAdded */,
+            false /* ignoreWorkInProgressPatchSet */,
+            false /* ignorePrivatePatchSet */);
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockChange.wip = true;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(true));
+    }
+
+    @Test
+    public void publishesWhenPrivate() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig(true /* publishOnReviewerAdded */,
+            false /* ignoreWorkInProgressPatchSet */,
+            false /* ignorePrivatePatchSet */);
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockChange.isPrivate = true;
 
         // Test
         MessageGenerator messageGenerator;

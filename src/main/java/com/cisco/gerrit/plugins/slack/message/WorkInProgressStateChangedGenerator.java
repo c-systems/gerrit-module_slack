@@ -18,8 +18,7 @@
 package com.cisco.gerrit.plugins.slack.message;
 
 import com.cisco.gerrit.plugins.slack.config.ProjectConfig;
-import com.google.gerrit.server.data.ChangeAttribute;
-import com.google.gerrit.server.events.ReviewerAddedEvent;
+import com.google.gerrit.server.events.WorkInProgressStateChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,28 +26,28 @@ import static org.apache.commons.lang.StringUtils.substringBefore;
 
 /**
  * A specific MessageGenerator implementation that can generate a message for
- * a reviewer added event.
+ * a work-in-progress state changed event.
  *
- * @author Nathan Wall
+ * @author James Hartig
  */
-public class ReviewerAddedMessageGenerator implements MessageGenerator
+public class WorkInProgressStateChangedGenerator implements MessageGenerator
 {
     /**
      * The class logger instance.
      */
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(ReviewerAddedMessageGenerator.class);
+            LoggerFactory.getLogger(WorkInProgressStateChangedGenerator.class);
 
     private ProjectConfig config;
-    private ReviewerAddedEvent event;
+    private WorkInProgressStateChangedEvent event;
 
     /**
-     * Creates a new ReviewerAddedMessageGenerator instance using the provided
-     * ReviewerAddedEvent instance.
+     * Creates a new WorkInProgressStateChangedGenerator instance using the provided
+     * WorkInProgressStateChangedEvent instance.
      *
-     * @param event The ReviewerAddedEvent instance to generate a message for.
+     * @param event The WorkInProgressStateChangedEvent instance to generate a message for.
      */
-    ReviewerAddedMessageGenerator(ReviewerAddedEvent event,
+    WorkInProgressStateChangedGenerator(WorkInProgressStateChangedEvent event,
                                             ProjectConfig config)
     {
         if (event == null)
@@ -63,29 +62,16 @@ public class ReviewerAddedMessageGenerator implements MessageGenerator
     @Override
     public boolean shouldPublish()
     {
-        if (!config.isEnabled() || !config.shouldPublishOnReviewerAdded())
+        if (!config.isEnabled() || !config.shouldPublishOnWipReady())
         {
             return false;
         }
 
-        try
+        // If the change is still work-in-progress then ignore
+        if (Boolean.TRUE.equals(event.change.get().wip))
         {
-            ChangeAttribute change;
-            change = event.change.get();
-            if (config.getIgnorePrivatePatchSet() && Boolean.TRUE.equals(change.isPrivate))
-            {
-                return false;
-            }
-            if (config.getIgnoreWorkInProgressPatchSet() && Boolean.TRUE.equals(change.wip))
-            {
-                return false;
-            }
+            return false;
         }
-        catch (Exception e)
-        {
-            LOGGER.warn("Error checking private and work-in-progress status", e);
-        }
-
         return true;
     }
 
@@ -101,8 +87,8 @@ public class ReviewerAddedMessageGenerator implements MessageGenerator
             template = new MessageTemplate();
 
             template.setChannel(config.getChannel());
-            template.setName(event.reviewer.get().name);
-            template.setAction("was added to review");
+            template.setName(event.changer.get().name);
+            template.setAction("proposed");
             template.setNumber(event.change.get().number);
             template.setProject(event.change.get().project);
             template.setBranch(event.change.get().branch);

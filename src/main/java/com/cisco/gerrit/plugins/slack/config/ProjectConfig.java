@@ -48,10 +48,14 @@ public class ProjectConfig
     private String username;
     private String ignore;
     private boolean ignoreUnchangedPatchSet;
+    private boolean ignoreWorkInProgressPatchSet;
+    private boolean ignorePrivatePatchSet;
     private boolean publishOnPatchSetCreated;
     private boolean publishOnChangeMerged;
     private boolean publishOnCommentAdded;
     private boolean publishOnReviewerAdded;
+    private boolean publishOnWipReady;
+    private boolean publishOnPrivateToPublic;
 
     /**
      * Creates a new instance of the ProjectConfig class for the given project.
@@ -93,6 +97,16 @@ public class ProjectConfig
                     projectNameKey, CONFIG_NAME).getBoolean(
                     "ignore-unchanged-patch-set", true);
 
+            ignoreWorkInProgressPatchSet =
+                configFactory.getFromProjectConfigWithInheritance(
+                    projectNameKey, CONFIG_NAME).getBoolean(
+                    "ignore-wip-patch-set", true);
+
+            ignorePrivatePatchSet =
+                configFactory.getFromProjectConfigWithInheritance(
+                    projectNameKey, CONFIG_NAME).getBoolean(
+                    "ignore-private-patch-set", true);
+
             publishOnPatchSetCreated =
                 configFactory.getFromProjectConfigWithInheritance(
                     projectNameKey, CONFIG_NAME).getBoolean(
@@ -112,6 +126,16 @@ public class ProjectConfig
                 configFactory.getFromProjectConfigWithInheritance(
                     projectNameKey, CONFIG_NAME).getBoolean(
                     "publish-on-reviewer-added", true);
+
+            publishOnWipReady =
+                configFactory.getFromProjectConfigWithInheritance(
+                    projectNameKey, CONFIG_NAME).getBoolean(
+                    "publish-on-wip-ready", publishOnPatchSetCreated);
+
+            publishOnPrivateToPublic =
+                configFactory.getFromProjectConfigWithInheritance(
+                    projectNameKey, CONFIG_NAME).getBoolean(
+                    "publish-on-private-to-public", publishOnPatchSetCreated);
         }
         catch (NoSuchProjectException e)
         {
@@ -150,6 +174,16 @@ public class ProjectConfig
         return ignoreUnchangedPatchSet;
     }
 
+    public boolean getIgnoreWorkInProgressPatchSet()
+    {
+        return ignoreWorkInProgressPatchSet;
+    }
+
+    public boolean getIgnorePrivatePatchSet()
+    {
+        return ignorePrivatePatchSet;
+    }
+
     public boolean shouldPublishOnPatchSetCreated()
     {
         return publishOnPatchSetCreated;
@@ -168,5 +202,15 @@ public class ProjectConfig
     public boolean shouldPublishOnReviewerAdded()
     {
         return publishOnReviewerAdded;
+    }
+
+    public boolean shouldPublishOnWipReady()
+    {
+        return publishOnWipReady;
+    }
+
+    public boolean shouldPublishOnPrivateToPublic()
+    {
+        return publishOnPrivateToPublic;
     }
 }

@@ -29,6 +29,7 @@ import com.google.gerrit.server.events.Event;
 import com.google.gerrit.server.events.EventListener;
 import com.google.gerrit.server.events.PatchSetCreatedEvent;
 import com.google.gerrit.server.events.ReviewerAddedEvent;
+import com.google.gerrit.server.events.WorkInProgressStateChangedEvent;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.slf4j.Logger;
@@ -100,6 +101,17 @@ public class PublishEventListener implements EventListener
 
                 messageGenerator = MessageGeneratorFactory.newInstance(
                         reviewerAddedEvent, config);
+            }
+            else if (event instanceof WorkInProgressStateChangedEvent)
+            {
+                WorkInProgressStateChangedEvent wipStateChangedEvent;
+                wipStateChangedEvent = (WorkInProgressStateChangedEvent) event;
+
+                config = new ProjectConfig(configFactory,
+                        wipStateChangedEvent.change.get().project);
+
+                messageGenerator = MessageGeneratorFactory.newInstance(
+                        wipStateChangedEvent, config);
             }
             else
             {

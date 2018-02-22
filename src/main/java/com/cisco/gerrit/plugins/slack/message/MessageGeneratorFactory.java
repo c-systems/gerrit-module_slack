@@ -22,7 +22,9 @@ import com.google.gerrit.server.events.ChangeMergedEvent;
 import com.google.gerrit.server.events.CommentAddedEvent;
 import com.google.gerrit.server.events.Event;
 import com.google.gerrit.server.events.PatchSetCreatedEvent;
+import com.google.gerrit.server.events.PrivateStateChangedEvent;
 import com.google.gerrit.server.events.ReviewerAddedEvent;
+import com.google.gerrit.server.events.WorkInProgressStateChangedEvent;
 
 /**
  * Factory used to create event specific MessageGenerator instances.
@@ -102,6 +104,42 @@ public class MessageGeneratorFactory
     {
         ReviewerAddedMessageGenerator messageGenerator;
         messageGenerator = new ReviewerAddedMessageGenerator(event, config);
+
+        return messageGenerator;
+    }
+
+    /**
+     * Creates a new MessageGenerator for work-in-progress state changed events.
+     *
+     * @param event A WorkInProgressStateChangedEvent instance
+     * @param config A ProjectConfig instance for the given event
+     *
+     * @return A MessageGenerator instance capable of generating a message for
+     * a WorkInProgressStateChangedEvent.
+     */
+    public static MessageGenerator newInstance(WorkInProgressStateChangedEvent event,
+                                               ProjectConfig config)
+    {
+        WorkInProgressStateChangedGenerator messageGenerator;
+        messageGenerator = new WorkInProgressStateChangedGenerator(event, config);
+
+        return messageGenerator;
+    }
+
+    /**
+     * Creates a new MessageGenerator for private state changed events.
+     *
+     * @param event A PrivateStateChangedEvent instance
+     * @param config A ProjectConfig instance for the given event
+     *
+     * @return A MessageGenerator instance capable of generating a message for
+     * a PrivateStateChangedEvent.
+     */
+    public static MessageGenerator newInstance(PrivateStateChangedEvent event,
+                                               ProjectConfig config)
+    {
+        PrivateStateChangedGenerator messageGenerator;
+        messageGenerator = new PrivateStateChangedGenerator(event, config);
 
         return messageGenerator;
     }
