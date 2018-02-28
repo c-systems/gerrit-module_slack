@@ -18,6 +18,7 @@
 package com.cisco.gerrit.plugins.slack.message;
 
 import com.cisco.gerrit.plugins.slack.config.ProjectConfig;
+import com.google.gerrit.extensions.client.ChangeKind;
 import com.google.gerrit.server.events.PatchSetCreatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,12 +61,47 @@ public class PatchSetCreatedMessageGenerator implements MessageGenerator
         this.config = config;
     }
 
+    private boolean unchangedChangeKind(ChangeKind kind)
+    {
+        switch (kind)
+        {
+            case TRIVIAL_REBASE:
+                return true;
+            case MERGE_FIRST_PARENT_UPDATE:
+                return true;
+            case NO_CODE_CHANGE:
+                return true;
+            case NO_CHANGE:
+                return true;
+            case REWORK:
+                return false;
+            default:
+                LOGGER.warn("Unknown ChangeKind", kind);
+        }
+        // Default unknown ChangeKind's to changed
+        return false;
+    }
+
     @Override
     public boolean shouldPublish()
     {
         if (!config.isEnabled() || !config.shouldPublishOnPatchSetCreated())
         {
             return false;
+        }
+
+        // Ignore rebases or no code changes
+        try
+        {
+            if (config.getIgnoreUnchangedPatchSet() &&
+                unchangedChangeKind(event.patchSet.get().kind))
+            {
+                return false;
+            }
+        }
+        catch (Exception e)
+        {
+            LOGGER.warn("Error checking patch set kind", e);
         }
 
         boolean result;

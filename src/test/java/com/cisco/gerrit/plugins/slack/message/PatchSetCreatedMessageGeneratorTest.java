@@ -19,11 +19,13 @@ package com.cisco.gerrit.plugins.slack.message;
 
 import com.cisco.gerrit.plugins.slack.config.ProjectConfig;
 import com.google.common.base.Suppliers;
+import com.google.gerrit.extensions.client.ChangeKind;
 import com.google.gerrit.reviewdb.client.Project;
 import com.google.gerrit.server.config.PluginConfig;
 import com.google.gerrit.server.config.PluginConfigFactory;
 import com.google.gerrit.server.data.AccountAttribute;
 import com.google.gerrit.server.data.ChangeAttribute;
+import com.google.gerrit.server.data.PatchSetAttribute;
 import com.google.gerrit.server.events.PatchSetCreatedEvent;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,6 +61,7 @@ public class PatchSetCreatedMessageGeneratorTest
     private PatchSetCreatedEvent mockEvent = mock(PatchSetCreatedEvent.class);
     private AccountAttribute mockAccount = mock(AccountAttribute.class);
     private ChangeAttribute mockChange = mock(ChangeAttribute.class);
+    private PatchSetAttribute mockPatchSet = mock(PatchSetAttribute.class);
 
     @Before
     public void setup() throws Exception
@@ -69,7 +72,8 @@ public class PatchSetCreatedMessageGeneratorTest
 
     private ProjectConfig getConfig(
         String ignore,
-        boolean publishOnPatchSetCreated)
+        boolean publishOnPatchSetCreated,
+        boolean ignoreUnchangedPatchSet)
         throws Exception
     {
         Project.NameKey projectNameKey;
@@ -92,23 +96,31 @@ public class PatchSetCreatedMessageGeneratorTest
                 .thenReturn(ignore);
         when(mockPluginConfig.getBoolean("publish-on-patch-set-created", true))
                 .thenReturn(publishOnPatchSetCreated);
+        when(mockPluginConfig.getBoolean("ignore-unchanged-patch-set", true))
+                .thenReturn(ignoreUnchangedPatchSet);
 
         return new ProjectConfig(mockConfigFactory, PROJECT_NAME);
     }
 
     private ProjectConfig getConfig(String ignore) throws Exception
     {
-        return getConfig(ignore, true /* publishOnPatchSetCreated */);
+        return getConfig(ignore, true /* publishOnPatchSetCreated */, true /* ignoreUnchangedPatchSet */);
     }
 
     private ProjectConfig getConfig(boolean publishOnPatchSetCreated) throws Exception
     {
-        return getConfig("^WIP.*", publishOnPatchSetCreated);
+        return getConfig("^WIP.*", publishOnPatchSetCreated, true /* ignoreUnchangedPatchSet */);
+    }
+
+    private ProjectConfig getConfig(boolean publishOnPatchSetCreated,
+                                        boolean ignoreUnchangedPatchSet) throws Exception
+    {
+        return getConfig("^WIP.*", publishOnPatchSetCreated, ignoreUnchangedPatchSet);
     }
 
     private ProjectConfig getConfig() throws Exception
     {
-        return getConfig("^WIP.*", true /* publishOnPatchSetCreated */);
+        return getConfig("^WIP.*", true /* publishOnPatchSetCreated */, true /* ignoreUnchangedPatchSet */);
     }
 
     @Test
@@ -185,6 +197,158 @@ public class PatchSetCreatedMessageGeneratorTest
     }
 
     @Test
+    public void doesNotPublishWhenTrivialRebase() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig();
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockEvent.patchSet = Suppliers.ofInstance(mockPatchSet);
+        mockPatchSet.kind = ChangeKind.TRIVIAL_REBASE;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(false));
+    }
+
+    @Test
+    public void publishesWhenTrivialRebase() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig(true, false);
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockEvent.patchSet = Suppliers.ofInstance(mockPatchSet);
+        mockPatchSet.kind = ChangeKind.TRIVIAL_REBASE;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(true));
+    }
+
+    @Test
+    public void doesNotPublishWhenMergeUpdate() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig();
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockEvent.patchSet = Suppliers.ofInstance(mockPatchSet);
+        mockPatchSet.kind = ChangeKind.MERGE_FIRST_PARENT_UPDATE;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(false));
+    }
+
+    @Test
+    public void publishesWhenMergeUpdate() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig(true, false);
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockEvent.patchSet = Suppliers.ofInstance(mockPatchSet);
+        mockPatchSet.kind = ChangeKind.MERGE_FIRST_PARENT_UPDATE;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(true));
+    }
+
+    @Test
+    public void doesNotPublishWhenNoCodeChange() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig();
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockEvent.patchSet = Suppliers.ofInstance(mockPatchSet);
+        mockPatchSet.kind = ChangeKind.NO_CODE_CHANGE;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(false));
+    }
+
+    @Test
+    public void publishesWhenNoCodeChange() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig(true, false);
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockEvent.patchSet = Suppliers.ofInstance(mockPatchSet);
+        mockPatchSet.kind = ChangeKind.NO_CODE_CHANGE;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(true));
+    }
+
+    @Test
+    public void doesNotPublishWhenNoChange() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig();
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockEvent.patchSet = Suppliers.ofInstance(mockPatchSet);
+        mockPatchSet.kind = ChangeKind.NO_CHANGE;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(false));
+    }
+
+    @Test
+    public void publishesWhenNoChange() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig(true, false);
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockEvent.patchSet = Suppliers.ofInstance(mockPatchSet);
+        mockPatchSet.kind = ChangeKind.NO_CHANGE;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(true));
+    }
+
+    @Test
+    public void publishesWhenRework() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig();
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockEvent.patchSet = Suppliers.ofInstance(mockPatchSet);
+        mockPatchSet.kind = ChangeKind.REWORK;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(true));
+    }
+
     public void generatesExpectedMessage() throws Exception
     {
         // Setup mocks
