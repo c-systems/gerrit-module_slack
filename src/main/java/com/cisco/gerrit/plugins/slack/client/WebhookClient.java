@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 import org.slf4j.Logger;
@@ -159,6 +160,18 @@ public class WebhookClient
         }
     }
 
+    private InputStream getResponseStream(HttpURLConnection connection)
+    {
+        try
+        {
+            return connection.getInputStream();
+        }
+        catch (IOException e)
+        {
+            return connection.getErrorStream();
+        }
+    }
+
     /**
      * Gets the response payload.
      *
@@ -167,59 +180,17 @@ public class WebhookClient
      */
     private String getResponse(HttpURLConnection connection)
     {
-        String response;
-
-        InputStream responseStream;
-        responseStream = null;
-        try
+        try (InputStream responseStream = getResponseStream(connection);
+            Scanner scanner = new Scanner(responseStream, StandardCharsets.UTF_8.name()))
         {
-            responseStream = connection.getInputStream();
-            response = readResponse(responseStream);
+            scanner.useDelimiter("\\A");
+            return scanner.next();
         }
         catch (IOException e)
         {
-            responseStream = connection.getErrorStream();
-            response = readResponse(responseStream);
+            LOGGER.debug("Error closing response stream: " +
+                    e.getMessage());
         }
-        finally
-        {
-            if (responseStream != null)
-            {
-                try
-                {
-                    responseStream.close();
-                }
-                catch (IOException e)
-                {
-                    LOGGER.debug("Error closing response stream: " +
-                            e.getMessage());
-                }
-            }
-        }
-
-        return response;
-    }
-
-    /**
-     * Reads the response from the response InputStream.
-     *
-     * @param responseStream The response stream from the connection.
-     * @return The string representation of the response.
-     */
-    private String readResponse(InputStream responseStream)
-    {
-        try
-        {
-            Scanner scanner;
-            scanner = new Scanner(responseStream, "UTF-8");
-            scanner.useDelimiter("\\A");
-
-            return scanner.next();
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(
-                    "Error reading response: [" + e.getMessage() + "].", e);
-        }
+        return null;
     }
 }
