@@ -1,6 +1,9 @@
+bazel-*
+eclipse-out
 .classpath
 .project
 .settings/
 target/
 .idea/
 *.iml
+/bin/
