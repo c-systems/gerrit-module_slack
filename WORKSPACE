@@ -4,7 +4,7 @@ load("//:bazlets.bzl", "load_bazlets")
 
 load_bazlets(
     commit = "66fa042963d9799faf7b29c273962f5c50884df6",
-#    local_path = "/Users/dpursehouse/git/bazlets",
+    #    local_path = "/Users/dpursehouse/git/bazlets",
 )
 
 #Snapshot Plugin API
