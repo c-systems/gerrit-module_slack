@@ -18,6 +18,7 @@
 package com.cisco.gerrit.plugins.slack.message;
 
 import com.cisco.gerrit.plugins.slack.config.ProjectConfig;
+import com.google.gerrit.server.data.ChangeAttribute;
 import com.google.gerrit.server.events.CommentAddedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +64,30 @@ public class CommentAddedMessageGenerator implements MessageGenerator
     @Override
     public boolean shouldPublish()
     {
-        return config.isEnabled() && config.shouldPublishOnCommentAdded();
+        if (!config.isEnabled() || !config.shouldPublishOnCommentAdded())
+        {
+            return false;
+        }
+
+        try
+        {
+            ChangeAttribute change;
+            change = event.change.get();
+            if (config.getIgnorePrivatePatchSet() && Boolean.TRUE.equals(change.isPrivate))
+            {
+                return false;
+            }
+            if (config.getIgnoreWorkInProgressPatchSet() && Boolean.TRUE.equals(change.wip))
+            {
+                return false;
+            }
+        }
+        catch (Exception e)
+        {
+            LOGGER.warn("Error checking private and work-in-progress status", e);
+        }
+
+        return true;
     }
 
     @Override

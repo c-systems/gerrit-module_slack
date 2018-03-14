@@ -73,7 +73,9 @@ public class PatchSetCreatedMessageGeneratorTest
     private ProjectConfig getConfig(
         String ignore,
         boolean publishOnPatchSetCreated,
-        boolean ignoreUnchangedPatchSet)
+        boolean ignoreUnchangedPatchSet,
+        boolean ignoreWorkInProgressPatchSet,
+        boolean ignorePrivatePatchSet)
         throws Exception
     {
         Project.NameKey projectNameKey;
@@ -98,29 +100,74 @@ public class PatchSetCreatedMessageGeneratorTest
                 .thenReturn(publishOnPatchSetCreated);
         when(mockPluginConfig.getBoolean("ignore-unchanged-patch-set", true))
                 .thenReturn(ignoreUnchangedPatchSet);
+        when(mockPluginConfig.getBoolean("ignore-wip-patch-set", true))
+                .thenReturn(ignoreWorkInProgressPatchSet);
+        when(mockPluginConfig.getBoolean("ignore-private-patch-set", true))
+                .thenReturn(ignorePrivatePatchSet);
 
         return new ProjectConfig(mockConfigFactory, PROJECT_NAME);
     }
 
     private ProjectConfig getConfig(String ignore) throws Exception
     {
-        return getConfig(ignore, true /* publishOnPatchSetCreated */, true /* ignoreUnchangedPatchSet */);
+        return getConfig(
+            ignore,
+            true /* publishOnPatchSetCreated */,
+            true /* ignoreUnchangedPatchSet */,
+            true /* ignoreWorkInProgressPatchSet */,
+            true /* ignorePrivatePatchSet */
+        );
     }
 
-    private ProjectConfig getConfig(boolean publishOnPatchSetCreated) throws Exception
+    private ProjectConfig getConfig(boolean publishOnPatchSetCreated)
+                                        throws Exception
     {
-        return getConfig("^WIP.*", publishOnPatchSetCreated, true /* ignoreUnchangedPatchSet */);
+        return getConfig(
+            "^WIP.*",
+            publishOnPatchSetCreated,
+            true /* ignoreUnchangedPatchSet */,
+            true /* ignoreWorkInProgressPatchSet */,
+            true /* ignorePrivatePatchSet */
+        );
     }
 
     private ProjectConfig getConfig(boolean publishOnPatchSetCreated,
-                                        boolean ignoreUnchangedPatchSet) throws Exception
+                                        boolean ignoreUnchangedPatchSet)
+                                        throws Exception
     {
-        return getConfig("^WIP.*", publishOnPatchSetCreated, ignoreUnchangedPatchSet);
+        return getConfig(
+            "^WIP.*",
+            publishOnPatchSetCreated,
+            ignoreUnchangedPatchSet,
+            true /* ignoreWorkInProgressPatchSet */,
+            true /* ignorePrivatePatchSet */
+        );
+    }
+
+    private ProjectConfig getConfig(boolean publishOnPatchSetCreated,
+                                        boolean ignoreUnchangedPatchSet,
+                                        boolean ignoreWorkInProgressPatchSet,
+                                        boolean ignorePrivatePatchSet)
+                                        throws Exception
+    {
+        return getConfig(
+            "^WIP.*",
+            publishOnPatchSetCreated,
+            ignoreUnchangedPatchSet,
+            ignoreWorkInProgressPatchSet,
+            ignorePrivatePatchSet
+        );
     }
 
     private ProjectConfig getConfig() throws Exception
     {
-        return getConfig("^WIP.*", true /* publishOnPatchSetCreated */, true /* ignoreUnchangedPatchSet */);
+        return getConfig(
+            "^WIP.*",
+            true /* publishOnPatchSetCreated */,
+            true /* ignoreUnchangedPatchSet */,
+            true /* ignoreWorkInProgressPatchSet */,
+            true /* ignorePrivatePatchSet */
+        );
     }
 
     @Test
@@ -349,6 +396,77 @@ public class PatchSetCreatedMessageGeneratorTest
         assertThat(messageGenerator.shouldPublish(), is(true));
     }
 
+    @Test
+    public void doesNotPublishWhenWorkInProgress() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig();
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockChange.wip = true;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(false));
+    }
+
+    @Test
+    public void doesNotPublishWhenPrivate() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig();
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockChange.isPrivate = true;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(false));
+    }
+
+    @Test
+    public void publishesWhenWorkInProgress() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig(true /* publishOnPatchSetCreated */,
+            false /* ignoreRebaseEmptyPatchSet */,
+            false /* ignoreWorkInProgressPatchSet */,
+            false /* ignorePrivatePatchSet */);
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockChange.wip = true;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(true));
+    }
+
+    @Test
+    public void publishesWhenPrivate() throws Exception
+    {
+        // Setup mocks
+        ProjectConfig config = getConfig(true /* publishOnPatchSetCreated */,
+            false /* ignoreRebaseEmptyPatchSet */,
+            false /* ignoreWorkInProgressPatchSet */,
+            false /* ignorePrivatePatchSet */);
+        mockEvent.change = Suppliers.ofInstance(mockChange);
+        mockChange.isPrivate = true;
+
+        // Test
+        MessageGenerator messageGenerator;
+        messageGenerator = MessageGeneratorFactory.newInstance(
+                mockEvent, config);
+
+        assertThat(messageGenerator.shouldPublish(), is(true));
+    }
+
+    @Test
     public void generatesExpectedMessage() throws Exception
     {
         // Setup mocks

@@ -24,7 +24,7 @@ import com.google.gerrit.server.config.PluginConfig;
 import com.google.gerrit.server.config.PluginConfigFactory;
 import com.google.gerrit.server.data.AccountAttribute;
 import com.google.gerrit.server.data.ChangeAttribute;
-import com.google.gerrit.server.events.ChangeMergedEvent;
+import com.google.gerrit.server.events.PrivateStateChangedEvent;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,13 +39,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Tests for the ChangeMergedMessageGeneratorTest class. The expected behavior
- * is that the ChangeMergedMessageGenerator should publish regardless of a
- * configured ignore pattern.
+ * Tests for the PrivateStateChangedGenerator class. The expected behavior
+ * is that the PrivateStateChangedGenerator should publish when the state
+ * changes.
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Project.NameKey.class})
-public class ChangeMergedMessageGeneratorTest
+public class PrivateStateChangedGeneratorTest
 {
     private static final String PROJECT_NAME = "test-project";
 
@@ -58,7 +58,7 @@ public class ChangeMergedMessageGeneratorTest
     private PluginConfig mockPluginConfig =
             mock(PluginConfig.class);
 
-    private ChangeMergedEvent mockEvent = mock(ChangeMergedEvent.class);
+    private PrivateStateChangedEvent mockEvent = mock(PrivateStateChangedEvent.class);
     private AccountAttribute mockAccount = mock(AccountAttribute.class);
     private ChangeAttribute mockChange = mock(ChangeAttribute.class);
 
@@ -69,7 +69,7 @@ public class ChangeMergedMessageGeneratorTest
         when(Project.NameKey.parse(PROJECT_NAME)).thenReturn(mockNameKey);
     }
 
-    private ProjectConfig getConfig(boolean publishOnChangeMerged) throws Exception
+    private ProjectConfig getConfig(boolean publishOnPrivateToPublic) throws Exception
     {
         Project.NameKey projectNameKey;
         projectNameKey = Project.NameKey.parse(PROJECT_NAME);
@@ -89,14 +89,17 @@ public class ChangeMergedMessageGeneratorTest
                 .thenReturn("testuser");
         when(mockPluginConfig.getString("ignore", ""))
                 .thenReturn("^WIP.*");
-        when(mockPluginConfig.getBoolean("publish-on-change-merged", true))
-                .thenReturn(publishOnChangeMerged);
+        when(mockPluginConfig.getBoolean("publish-on-patch-set-created", true))
+                .thenReturn(true);
+        when(mockPluginConfig.getBoolean("publish-on-private-to-public", true))
+                .thenReturn(publishOnPrivateToPublic);
 
         return new ProjectConfig(mockConfigFactory, PROJECT_NAME);
     }
 
-    private ProjectConfig getConfig() throws Exception {
-        return getConfig(true /* publishOnChangeMerged */);
+    private ProjectConfig getConfig() throws Exception
+    {
+        return getConfig(true /* publishOnPrivateToPublic */);
     }
 
     @Test
@@ -107,7 +110,7 @@ public class ChangeMergedMessageGeneratorTest
         messageGenerator = MessageGeneratorFactory.newInstance(
                 mockEvent, config);
 
-        assertThat(messageGenerator instanceof ChangeMergedMessageGenerator,
+        assertThat(messageGenerator instanceof PrivateStateChangedGenerator,
                 is(true));
     }
 
@@ -117,23 +120,6 @@ public class ChangeMergedMessageGeneratorTest
         // Setup mocks
         ProjectConfig config = getConfig();
         mockEvent.change = Suppliers.ofInstance(mockChange);
-        mockChange.commitMessage = "This is a title\nand a the body.";
-
-        // Test
-        MessageGenerator messageGenerator;
-        messageGenerator = MessageGeneratorFactory.newInstance(
-                mockEvent, config);
-
-        assertThat(messageGenerator.shouldPublish(), is(true));
-    }
-
-    @Test
-    public void publishesWhenMessageMatchesIgnore() throws Exception
-    {
-        // Setup mocks
-        ProjectConfig config = getConfig();
-        mockEvent.change = Suppliers.ofInstance(mockChange);
-        mockChange.commitMessage = "WIP:This is a title\nand a the body.";
 
         // Test
         MessageGenerator messageGenerator;
@@ -147,9 +133,7 @@ public class ChangeMergedMessageGeneratorTest
     public void doesNotPublishWhenTurnedOff() throws Exception
     {
         // Setup mocks
-        ProjectConfig config = getConfig(false /* publishOnChangeMerged */);
-        mockEvent.change = Suppliers.ofInstance(mockChange);
-        mockChange.commitMessage = "This is a title\nand a the body.";
+        ProjectConfig config = getConfig(false /* publishOnPrivateToPublic */);
 
         // Test
         MessageGenerator messageGenerator;
@@ -160,37 +144,7 @@ public class ChangeMergedMessageGeneratorTest
     }
 
     @Test
-    public void handlesInvalidIgnorePatterns() throws Exception
-    {
-        ProjectConfig config = getConfig();
-        when(mockPluginConfig.getString("ignore", "")).thenReturn(null);
-
-        // Test
-        MessageGenerator messageGenerator;
-        messageGenerator = MessageGeneratorFactory.newInstance(
-                mockEvent, config);
-
-        assertThat(messageGenerator.shouldPublish(), is(true));
-    }
-
-    @Test
-    public void publishesWhenWorkInProgress() throws Exception
-    {
-        // Setup mocks
-        ProjectConfig config = getConfig();
-        mockEvent.change = Suppliers.ofInstance(mockChange);
-        mockChange.wip = true;
-
-        // Test
-        MessageGenerator messageGenerator;
-        messageGenerator = MessageGeneratorFactory.newInstance(
-                mockEvent, config);
-
-        assertThat(messageGenerator.shouldPublish(), is(true));
-    }
-
-    @Test
-    public void publishesWhenPrivate() throws Exception
+    public void doesNotPublishWhenPrivate() throws Exception
     {
         // Setup mocks
         ProjectConfig config = getConfig();
@@ -202,7 +156,7 @@ public class ChangeMergedMessageGeneratorTest
         messageGenerator = MessageGeneratorFactory.newInstance(
                 mockEvent, config);
 
-        assertThat(messageGenerator.shouldPublish(), is(true));
+        assertThat(messageGenerator.shouldPublish(), is(false));
     }
 
     @Test
@@ -210,9 +164,8 @@ public class ChangeMergedMessageGeneratorTest
     {
         // Setup mocks
         ProjectConfig config = getConfig();
-
+        mockEvent.changer = Suppliers.ofInstance(mockAccount);
         mockEvent.change = Suppliers.ofInstance(mockChange);
-        mockEvent.submitter = Suppliers.ofInstance(mockAccount);
 
         mockChange.number = 1234;
         mockChange.project = "testproject";
@@ -232,8 +185,8 @@ public class ChangeMergedMessageGeneratorTest
                 "  \"channel\": \"#testchannel\",\n" +
                 "  \"attachments\": [\n" +
                 "    {\n" +
-                "      \"fallback\": \"Unit Tester merged testproject (master) https://change/: This is the title\",\n" +
-                "      \"pretext\": \"Unit Tester merged <https://change/|testproject (master) change 1234>\",\n" +
+                "      \"fallback\": \"Unit Tester proposed testproject (master) https://change/: This is the title\",\n" +
+                "      \"pretext\": \"Unit Tester proposed <https://change/|testproject (master) change 1234>\",\n" +
                 "      \"title\": \"This is the title\",\n" +
                 "      \"title_link\": \"https://change/\",\n" +
                 "      \"text\": \"\",\n" +
