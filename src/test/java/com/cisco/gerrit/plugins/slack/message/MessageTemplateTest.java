@@ -19,21 +19,19 @@ package com.cisco.gerrit.plugins.slack.message;
 
 import org.junit.Test;
 
-public class MessageTemplateTest
-{
-    @Test
-    public void rendersTemplate() throws Exception
-    {
-        MessageTemplate template;
-        template = new MessageTemplate();
+public class MessageTemplateTest {
+  @Test
+  public void rendersTemplate() throws Exception {
+    MessageTemplate template;
+    template = new MessageTemplate();
 
-        template.setChannel("testchannel");
-        template.setName("Unit Tester");
-        template.setAction("proposed");
-        template.setProject("project");
-        template.setBranch("master");
-        template.setUrl("https://change/");
-        template.setNumber(1234);
-        template.setMessage("This is a really great commit.");
-    }
+    template.setChannel("testchannel");
+    template.setName("Unit Tester");
+    template.setAction("proposed");
+    template.setProject("project");
+    template.setBranch("master");
+    template.setUrl("https://change/");
+    template.setNumber(1234);
+    template.setMessage("This is a really great commit.");
+  }
 }

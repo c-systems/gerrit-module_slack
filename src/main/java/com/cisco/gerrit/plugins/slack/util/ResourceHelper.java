@@ -20,75 +20,60 @@ package com.cisco.gerrit.plugins.slack.util;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * Simple helper class to load resources via the current classloader.
- */
-public final class ResourceHelper
-{
-    // Made private to prevent instantiation.
-    private ResourceHelper() { }
+/** Simple helper class to load resources via the current classloader. */
+public final class ResourceHelper {
+  // Made private to prevent instantiation.
+  private ResourceHelper() {}
 
-    /**
-     * Loads the named resource as an InputStream from the current
-     * classloader.
-     *
-     * @param name The named resource.
-     *
-     * @return The named resource as an InputStream, null if not found.
-     *
-     * @throws IOException In the event of an IO error
-     */
-    public static InputStream loadNamedResourceAsStream(String name)
-            throws IOException
-    {
-        InputStream result;
-        result = null;
+  /**
+   * Loads the named resource as an InputStream from the current classloader.
+   *
+   * @param name The named resource.
+   * @return The named resource as an InputStream, null if not found.
+   * @throws IOException In the event of an IO error
+   */
+  public static InputStream loadNamedResourceAsStream(String name) throws IOException {
+    InputStream result;
+    result = null;
 
-        if (name != null)
-        {
-            ClassLoader classLoader;
-            classLoader = ResourceHelper.class.getClassLoader();
+    if (name != null) {
+      ClassLoader classLoader;
+      classLoader = ResourceHelper.class.getClassLoader();
 
-            result = classLoader.getResourceAsStream(name);
-        }
-
-        return result;
+      result = classLoader.getResourceAsStream(name);
     }
 
-    /**
-     * Loads the named resource as a String from the current classloader.
-     *
-     * @param name The named resource.
-     *
-     * @return The named resource as a String, null if not found.
-     *
-     * @throws IOException In the event of an IO error
-     */
-    public static String loadNamedResourceAsString(String name)
-            throws IOException
-    {
-        String result;
-        result = null;
+    return result;
+  }
 
-        InputStream inputStream;
-        inputStream = ResourceHelper.loadNamedResourceAsStream(name);
+  /**
+   * Loads the named resource as a String from the current classloader.
+   *
+   * @param name The named resource.
+   * @return The named resource as a String, null if not found.
+   * @throws IOException In the event of an IO error
+   */
+  public static String loadNamedResourceAsString(String name) throws IOException {
+    String result;
+    result = null;
 
-        if (inputStream != null)
-        {
-            StringBuffer buffer;
-            buffer = new StringBuffer();
+    InputStream inputStream;
+    inputStream = ResourceHelper.loadNamedResourceAsStream(name);
 
-            byte[] b;
-            b = new byte[4096];
+    if (inputStream != null) {
+      StringBuffer buffer;
+      buffer = new StringBuffer();
 
-            for (int n; (n = inputStream.read(b)) != -1; )
-            {
-                buffer.append(new String(b, 0, n));
-            }
+      byte[] b;
+      b = new byte[4096];
 
-            result = buffer.toString();
-        }
+      for (int n; (n = inputStream.read(b)) != -1; ) {
+        buffer.append(new String(b, 0, n));
+      }
 
-        return result;
+      result = buffer.toString();
     }
+
+    return result;
+  }
 }

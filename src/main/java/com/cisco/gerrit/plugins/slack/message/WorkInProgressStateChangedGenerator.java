@@ -17,91 +17,78 @@
 
 package com.cisco.gerrit.plugins.slack.message;
 
+import static org.apache.commons.lang.StringUtils.substringBefore;
+
 import com.cisco.gerrit.plugins.slack.config.ProjectConfig;
 import com.google.gerrit.server.events.WorkInProgressStateChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.commons.lang.StringUtils.substringBefore;
-
 /**
- * A specific MessageGenerator implementation that can generate a message for
- * a work-in-progress state changed event.
+ * A specific MessageGenerator implementation that can generate a message for a work-in-progress
+ * state changed event.
  *
  * @author James Hartig
  */
-public class WorkInProgressStateChangedGenerator implements MessageGenerator
-{
-    /**
-     * The class logger instance.
-     */
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(WorkInProgressStateChangedGenerator.class);
+public class WorkInProgressStateChangedGenerator implements MessageGenerator {
+  /** The class logger instance. */
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(WorkInProgressStateChangedGenerator.class);
 
-    private ProjectConfig config;
-    private WorkInProgressStateChangedEvent event;
+  private ProjectConfig config;
+  private WorkInProgressStateChangedEvent event;
 
-    /**
-     * Creates a new WorkInProgressStateChangedGenerator instance using the provided
-     * WorkInProgressStateChangedEvent instance.
-     *
-     * @param event The WorkInProgressStateChangedEvent instance to generate a message for.
-     */
-    WorkInProgressStateChangedGenerator(WorkInProgressStateChangedEvent event,
-                                            ProjectConfig config)
-    {
-        if (event == null)
-        {
-            throw new NullPointerException("event cannot be null");
-        }
-
-        this.event = event;
-        this.config = config;
+  /**
+   * Creates a new WorkInProgressStateChangedGenerator instance using the provided
+   * WorkInProgressStateChangedEvent instance.
+   *
+   * @param event The WorkInProgressStateChangedEvent instance to generate a message for.
+   */
+  WorkInProgressStateChangedGenerator(WorkInProgressStateChangedEvent event, ProjectConfig config) {
+    if (event == null) {
+      throw new NullPointerException("event cannot be null");
     }
 
-    @Override
-    public boolean shouldPublish()
-    {
-        if (!config.isEnabled() || !config.shouldPublishOnWipReady())
-        {
-            return false;
-        }
+    this.event = event;
+    this.config = config;
+  }
 
-        // If the change is still work-in-progress then ignore
-        if (Boolean.TRUE.equals(event.change.get().wip))
-        {
-            return false;
-        }
-        return true;
+  @Override
+  public boolean shouldPublish() {
+    if (!config.isEnabled() || !config.shouldPublishOnWipReady()) {
+      return false;
     }
 
-    @Override
-    public String generate()
-    {
-        String message;
-        message = "";
-
-        try
-        {
-            MessageTemplate template;
-            template = new MessageTemplate();
-
-            template.setChannel(config.getChannel());
-            template.setName(event.changer.get().name);
-            template.setAction("proposed");
-            template.setNumber(event.change.get().number);
-            template.setProject(event.change.get().project);
-            template.setBranch(event.change.get().branch);
-            template.setUrl(event.change.get().url);
-            template.setTitle(substringBefore(event.change.get().commitMessage, "\n"));
-
-            message = template.render();
-        }
-        catch (Exception e)
-        {
-            LOGGER.error("Error generating message: " + e.getMessage(), e);
-        }
-
-        return message;
+    // If the change is still work-in-progress then ignore
+    if (Boolean.TRUE.equals(event.change.get().wip)) {
+      return false;
     }
+    return true;
+  }
+
+  @Override
+  public String generate() {
+    String message;
+    message = "";
+
+    try {
+      MessageTemplate template;
+      template = new MessageTemplate();
+
+      template.setChannel(config.getChannel());
+      template.setName(event.changer.get().name);
+      template.setAction("proposed");
+      template.setNumber(event.change.get().number);
+      template.setProject(event.change.get().project);
+      template.setBranch(event.change.get().branch);
+      template.setUrl(event.change.get().url);
+      template.setTitle(substringBefore(event.change.get().commitMessage, "\n"));
+
+      message = template.render();
+    } catch (Exception e) {
+      LOGGER.error("Error generating message: " + e.getMessage(), e);
+    }
+
+    return message;
+  }
 }

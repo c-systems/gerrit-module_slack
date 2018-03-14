@@ -22,19 +22,18 @@ package com.cisco.gerrit.plugins.slack.message;
  *
  * @author Matthew Montgomery
  */
-public interface MessageGenerator
-{
-    /**
-     * Whether or not the generated message should be published.
-     *
-     * @return True if the message should be published, otherwise false
-     */
-    boolean shouldPublish();
+public interface MessageGenerator {
+  /**
+   * Whether or not the generated message should be published.
+   *
+   * @return True if the message should be published, otherwise false
+   */
+  boolean shouldPublish();
 
-    /**
-     * Generates an event specific message suitable for publishing.
-     *
-     * @return The generated message.
-     */
-    String generate();
+  /**
+   * Generates an event specific message suitable for publishing.
+   *
+   * @return The generated message.
+   */
+  String generate();
 }

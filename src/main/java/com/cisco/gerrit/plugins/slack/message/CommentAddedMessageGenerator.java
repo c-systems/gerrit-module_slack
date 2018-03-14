@@ -17,110 +17,91 @@
 
 package com.cisco.gerrit.plugins.slack.message;
 
+import static org.apache.commons.lang.StringUtils.substringBefore;
+
 import com.cisco.gerrit.plugins.slack.config.ProjectConfig;
 import com.google.gerrit.server.data.ChangeAttribute;
 import com.google.gerrit.server.events.CommentAddedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.commons.lang.StringUtils.substringBefore;
-
 /**
- * A specific MessageGenerator implementation that can generate a message for
- * a comment added event.
+ * A specific MessageGenerator implementation that can generate a message for a comment added event.
  *
  * @author Kenneth Pedersen
  * @author Matthew Montgomery
  */
-public class CommentAddedMessageGenerator implements MessageGenerator
-{
-    /**
-     * The class logger instance.
-     */
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(CommentAddedMessageGenerator.class);
+public class CommentAddedMessageGenerator implements MessageGenerator {
+  /** The class logger instance. */
+  private static final Logger LOGGER = LoggerFactory.getLogger(CommentAddedMessageGenerator.class);
 
-    private ProjectConfig config;
-    private CommentAddedEvent event;
+  private ProjectConfig config;
+  private CommentAddedEvent event;
 
-    /**
-     * Creates a new CommentAddedMessageGenerator instance using the provided
-     * CommentAddedEvent instance.
-     *
-     * @param event The CommentAddedEvent instance to generate a message for.
-     */
-    CommentAddedMessageGenerator(CommentAddedEvent event,
-                                           ProjectConfig config)
-    {
-        if (event == null)
-        {
-            throw new NullPointerException("event cannot be null");
-        }
-
-        this.event = event;
-        this.config = config;
+  /**
+   * Creates a new CommentAddedMessageGenerator instance using the provided CommentAddedEvent
+   * instance.
+   *
+   * @param event The CommentAddedEvent instance to generate a message for.
+   */
+  CommentAddedMessageGenerator(CommentAddedEvent event, ProjectConfig config) {
+    if (event == null) {
+      throw new NullPointerException("event cannot be null");
     }
 
-    @Override
-    public boolean shouldPublish()
-    {
-        if (!config.isEnabled() || !config.shouldPublishOnCommentAdded())
-        {
-            return false;
-        }
+    this.event = event;
+    this.config = config;
+  }
 
-        try
-        {
-            ChangeAttribute change;
-            change = event.change.get();
-            if (config.getIgnorePrivatePatchSet() && Boolean.TRUE.equals(change.isPrivate))
-            {
-                return false;
-            }
-            if (config.getIgnoreWorkInProgressPatchSet() && Boolean.TRUE.equals(change.wip))
-            {
-                return false;
-            }
-        }
-        catch (Exception e)
-        {
-            LOGGER.warn("Error checking private and work-in-progress status", e);
-        }
-
-        return true;
+  @Override
+  public boolean shouldPublish() {
+    if (!config.isEnabled() || !config.shouldPublishOnCommentAdded()) {
+      return false;
     }
 
-    @Override
-    public String generate()
-    {
-        String message;
-        message = "";
-
-        LOGGER.info(substringBefore(event.change.get().commitMessage, "\n"));
-        LOGGER.info(event.comment);
-
-        try
-        {
-            MessageTemplate template;
-            template = new MessageTemplate();
-
-            template.setChannel(config.getChannel());
-            template.setName(event.author.get().name);
-            template.setAction("commented on");
-            template.setProject(event.change.get().project);
-            template.setBranch(event.change.get().branch);
-            template.setUrl(event.change.get().url);
-            template.setNumber(event.change.get().number);
-            template.setTitle(substringBefore(event.change.get().commitMessage, "\n"));
-            template.setMessage(event.comment);
-
-            message = template.render();
-        }
-        catch (Exception e)
-        {
-            LOGGER.error("Error generating message: " + e.getMessage(), e);
-        }
-
-        return message;
+    try {
+      ChangeAttribute change;
+      change = event.change.get();
+      if (config.getIgnorePrivatePatchSet() && Boolean.TRUE.equals(change.isPrivate)) {
+        return false;
+      }
+      if (config.getIgnoreWorkInProgressPatchSet() && Boolean.TRUE.equals(change.wip)) {
+        return false;
+      }
+    } catch (Exception e) {
+      LOGGER.warn("Error checking private and work-in-progress status", e);
     }
+
+    return true;
+  }
+
+  @Override
+  public String generate() {
+    String message;
+    message = "";
+
+    LOGGER.info(substringBefore(event.change.get().commitMessage, "\n"));
+    LOGGER.info(event.comment);
+
+    try {
+      MessageTemplate template;
+      template = new MessageTemplate();
+
+      template.setChannel(config.getChannel());
+      template.setName(event.author.get().name);
+      template.setAction("commented on");
+      template.setProject(event.change.get().project);
+      template.setBranch(event.change.get().branch);
+      template.setUrl(event.change.get().url);
+      template.setNumber(event.change.get().number);
+      template.setTitle(substringBefore(event.change.get().commitMessage, "\n"));
+      template.setMessage(event.comment);
+
+      message = template.render();
+    } catch (Exception e) {
+      LOGGER.error("Error generating message: " + e.getMessage(), e);
+    }
+
+    return message;
+  }
 }

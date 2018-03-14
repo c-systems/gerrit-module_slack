@@ -17,87 +17,82 @@
 
 package com.cisco.gerrit.plugins.slack.client;
 
-import com.cisco.gerrit.plugins.slack.message.MessageTemplate;
-import com.cisco.gerrit.plugins.slack.util.ResourceHelper;
-import org.junit.Test;
-
-import java.io.InputStream;
-import java.util.Properties;
-
 import static org.junit.Assert.assertTrue;
 
-public class WebhookClientIntegrationTest
-{
-    @Test
-    public void canPublishMessage() throws Exception
-    {
-        WebhookClient client;
-        client = new WebhookClient();
+import com.cisco.gerrit.plugins.slack.message.MessageTemplate;
+import com.cisco.gerrit.plugins.slack.util.ResourceHelper;
+import java.io.InputStream;
+import java.util.Properties;
+import org.junit.Test;
 
-        InputStream testProperties;
-        testProperties = ResourceHelper.loadNamedResourceAsStream(
-                "test.properties");
+public class WebhookClientIntegrationTest {
+  @Test
+  public void canPublishMessage() throws Exception {
+    WebhookClient client;
+    client = new WebhookClient();
 
-        Properties properties;
-        properties = new Properties();
-        properties.load(testProperties);
+    InputStream testProperties;
+    testProperties = ResourceHelper.loadNamedResourceAsStream("test.properties");
 
-        testProperties.close();
+    Properties properties;
+    properties = new Properties();
+    properties.load(testProperties);
 
-        MessageTemplate template;
-        template = new MessageTemplate();
+    testProperties.close();
 
-        template.setChannel("general");
-        template.setName("Integration Tester");
-        template.setAction("proposed");
-        template.setProject("project");
-        template.setBranch("master");
-        template.setUrl("http://gerrit/1234");
-        template.setNumber(1234);
-        template.setTitle("Adds a test commit message");
+    MessageTemplate template;
+    template = new MessageTemplate();
 
-        String webhookUrl;
-        webhookUrl = properties.getProperty("webhook-url");
+    template.setChannel("general");
+    template.setName("Integration Tester");
+    template.setAction("proposed");
+    template.setProject("project");
+    template.setBranch("master");
+    template.setUrl("http://gerrit/1234");
+    template.setNumber(1234);
+    template.setTitle("Adds a test commit message");
 
-        assertTrue(client.publish(template.render(), webhookUrl));
-    }
+    String webhookUrl;
+    webhookUrl = properties.getProperty("webhook-url");
 
-    @Test
-    public void canPublishMessageWithLongMessage() throws Exception
-    {
-        WebhookClient client;
-        client = new WebhookClient();
+    assertTrue(client.publish(template.render(), webhookUrl));
+  }
 
-        InputStream testProperties;
-        testProperties = ResourceHelper.loadNamedResourceAsStream(
-                "test.properties");
+  @Test
+  public void canPublishMessageWithLongMessage() throws Exception {
+    WebhookClient client;
+    client = new WebhookClient();
 
-        Properties properties;
-        properties = new Properties();
-        properties.load(testProperties);
+    InputStream testProperties;
+    testProperties = ResourceHelper.loadNamedResourceAsStream("test.properties");
 
-        testProperties.close();
+    Properties properties;
+    properties = new Properties();
+    properties.load(testProperties);
 
-        MessageTemplate template;
-        template = new MessageTemplate();
+    testProperties.close();
 
-        template.setChannel("general");
-        template.setName("Integration Tester");
-        template.setAction("commented on");
-        template.setProject("project");
-        template.setBranch("master");
-        template.setUrl("http://gerrit/1234");
-        template.setNumber(1234);
-        template.setTitle("Adds a test commit message");
-        template.setMessage("It provides a bunch of really great things. " +
-                "I am mostly trying to fill out a really long comment to " +
-                "test message rendering. Slack should do the right thing " +
-                "but this will be on multiple lines in IRC.\n\n\n\n\n" +
-                "This is hidden.");
+    MessageTemplate template;
+    template = new MessageTemplate();
 
-        String webhookUrl;
-        webhookUrl = properties.getProperty("webhook-url");
+    template.setChannel("general");
+    template.setName("Integration Tester");
+    template.setAction("commented on");
+    template.setProject("project");
+    template.setBranch("master");
+    template.setUrl("http://gerrit/1234");
+    template.setNumber(1234);
+    template.setTitle("Adds a test commit message");
+    template.setMessage(
+        "It provides a bunch of really great things. "
+            + "I am mostly trying to fill out a really long comment to "
+            + "test message rendering. Slack should do the right thing "
+            + "but this will be on multiple lines in IRC.\n\n\n\n\n"
+            + "This is hidden.");
 
-        assertTrue(client.publish(template.render(), webhookUrl));
-    }
+    String webhookUrl;
+    webhookUrl = properties.getProperty("webhook-url");
+
+    assertTrue(client.publish(template.render(), webhookUrl));
+  }
 }

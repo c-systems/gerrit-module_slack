@@ -21,43 +21,37 @@ import com.cisco.gerrit.plugins.slack.config.ProjectConfig;
 import com.google.gerrit.server.events.Event;
 
 /**
- * A specific MessageGenerator implementation that can generate a message for
- * an unsupported Event. The default behavior for this MessageGenerator
- * is to flag that it should not be published.
+ * A specific MessageGenerator implementation that can generate a message for an unsupported Event.
+ * The default behavior for this MessageGenerator is to flag that it should not be published.
  *
  * @author Matthew Montgomery
  */
-public class UnsupportedMessageGenerator implements MessageGenerator
-{
-    private ProjectConfig config;
-    private Event event;
+public class UnsupportedMessageGenerator implements MessageGenerator {
+  private ProjectConfig config;
+  private Event event;
 
-    UnsupportedMessageGenerator(Event event, ProjectConfig config)
-    {
-        if (event == null)
-        {
-            throw new NullPointerException("event cannot be null");
-        }
-
-        this.event = event;
-        this.config = config;
+  UnsupportedMessageGenerator(Event event, ProjectConfig config) {
+    if (event == null) {
+      throw new NullPointerException("event cannot be null");
     }
 
-    @Override
-    public boolean shouldPublish()
-    {
-        return false;
-    }
+    this.event = event;
+    this.config = config;
+  }
 
-    @Override
-    public String generate()
-    {
-        StringBuilder message;
-        message = new StringBuilder();
+  @Override
+  public boolean shouldPublish() {
+    return false;
+  }
 
-        message.append("Unsupported event: ");
-        message.append(this.event.toString());
+  @Override
+  public String generate() {
+    StringBuilder message;
+    message = new StringBuilder();
 
-        return message.toString();
-    }
+    message.append("Unsupported event: ");
+    message.append(this.event.toString());
+
+    return message.toString();
+  }
 }

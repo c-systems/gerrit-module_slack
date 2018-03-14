@@ -17,33 +17,28 @@
 
 package com.cisco.gerrit.plugins.slack;
 
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
 import com.google.gerrit.server.events.ChangeMergedEvent;
 import com.google.gerrit.server.events.PatchSetCreatedEvent;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
+public class PublishEventListenerTest {
+  private PatchSetCreatedEvent mockPatchSetCreatedEvent = mock(PatchSetCreatedEvent.class);
+  private ChangeMergedEvent mockChangeMergedEvent = mock(ChangeMergedEvent.class);
 
-public class PublishEventListenerTest
-{
-    private PatchSetCreatedEvent mockPatchSetCreatedEvent =
-            mock(PatchSetCreatedEvent.class);
-    private ChangeMergedEvent mockChangeMergedEvent =
-            mock(ChangeMergedEvent.class);
+  private PublishEventListener publishEventListener;
 
-    private PublishEventListener publishEventListener;
+  @Before
+  public void setup() throws Exception {
+    publishEventListener = new PublishEventListener();
+  }
 
-    @Before
-    public void setup() throws Exception
-    {
-        publishEventListener = new PublishEventListener();
-    }
-
-    @Test
-    public void handlesPatchSetCreatedEvents() throws Exception
-    {
-        // TODO: Add actual tests here
-        assertTrue(true);
-    }
+  @Test
+  public void handlesPatchSetCreatedEvents() throws Exception {
+    // TODO: Add actual tests here
+    assertTrue(true);
+  }
 }

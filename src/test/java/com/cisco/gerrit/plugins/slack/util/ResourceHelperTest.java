@@ -17,28 +17,25 @@
 
 package com.cisco.gerrit.plugins.slack.util;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class ResourceHelperTest
-{
-    private static final String RESOURCE_NAME = "test.properties";
+import org.junit.Test;
 
-    @Test
-    public void testLoadNamedResourceAsStream() throws Exception
-    {
-        assertNotNull(ResourceHelper.loadNamedResourceAsStream(RESOURCE_NAME));
-    }
+public class ResourceHelperTest {
+  private static final String RESOURCE_NAME = "test.properties";
 
-    @Test
-    public void testLoadNamedResourceAsString() throws Exception
-    {
-        String resource;
-        resource = ResourceHelper.loadNamedResourceAsString(RESOURCE_NAME);
+  @Test
+  public void testLoadNamedResourceAsStream() throws Exception {
+    assertNotNull(ResourceHelper.loadNamedResourceAsStream(RESOURCE_NAME));
+  }
 
-        assertNotNull(resource);
-        assertTrue(resource.length() > 0);
-    }
+  @Test
+  public void testLoadNamedResourceAsString() throws Exception {
+    String resource;
+    resource = ResourceHelper.loadNamedResourceAsString(RESOURCE_NAME);
+
+    assertNotNull(resource);
+    assertTrue(resource.length() > 0);
+  }
 }

@@ -35,106 +35,73 @@ import com.google.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Listens for Gerrit change events and publishes messages to Slack.
- */
+/** Listens for Gerrit change events and publishes messages to Slack. */
 @Listen
 @Singleton
-public class PublishEventListener implements EventListener
-{
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(PublishEventListener.class);
+public class PublishEventListener implements EventListener {
+  private static final Logger LOGGER = LoggerFactory.getLogger(PublishEventListener.class);
 
-    private static final String ALL_PROJECTS = "All-Projects";
+  private static final String ALL_PROJECTS = "All-Projects";
 
-    @Inject
-    private PluginConfigFactory configFactory;
+  @Inject private PluginConfigFactory configFactory;
 
-    @Override
-    public void onEvent(Event event)
-    {
-        try
-        {
-            ProjectConfig config;
-            MessageGenerator messageGenerator;
+  @Override
+  public void onEvent(Event event) {
+    try {
+      ProjectConfig config;
+      MessageGenerator messageGenerator;
 
-            if (event instanceof PatchSetCreatedEvent)
-            {
-                PatchSetCreatedEvent patchSetCreatedEvent;
-                patchSetCreatedEvent = (PatchSetCreatedEvent) event;
+      if (event instanceof PatchSetCreatedEvent) {
+        PatchSetCreatedEvent patchSetCreatedEvent;
+        patchSetCreatedEvent = (PatchSetCreatedEvent) event;
 
-                config = new ProjectConfig(configFactory,
-                        patchSetCreatedEvent.change.get().project);
+        config = new ProjectConfig(configFactory, patchSetCreatedEvent.change.get().project);
 
-                messageGenerator = MessageGeneratorFactory.newInstance(
-                        patchSetCreatedEvent, config);
-            }
-            else if (event instanceof ChangeMergedEvent)
-            {
-                ChangeMergedEvent changeMergedEvent;
-                changeMergedEvent = (ChangeMergedEvent) event;
+        messageGenerator = MessageGeneratorFactory.newInstance(patchSetCreatedEvent, config);
+      } else if (event instanceof ChangeMergedEvent) {
+        ChangeMergedEvent changeMergedEvent;
+        changeMergedEvent = (ChangeMergedEvent) event;
 
-                config = new ProjectConfig(configFactory,
-                        changeMergedEvent.change.get().project);
+        config = new ProjectConfig(configFactory, changeMergedEvent.change.get().project);
 
-                messageGenerator = MessageGeneratorFactory.newInstance(
-                        changeMergedEvent, config);
-            }
-            else if (event instanceof CommentAddedEvent)
-            {
-                CommentAddedEvent commentAddedEvent;
-                commentAddedEvent = (CommentAddedEvent) event;
+        messageGenerator = MessageGeneratorFactory.newInstance(changeMergedEvent, config);
+      } else if (event instanceof CommentAddedEvent) {
+        CommentAddedEvent commentAddedEvent;
+        commentAddedEvent = (CommentAddedEvent) event;
 
-                config = new ProjectConfig(configFactory,
-                        commentAddedEvent.change.get().project);
+        config = new ProjectConfig(configFactory, commentAddedEvent.change.get().project);
 
-                messageGenerator = MessageGeneratorFactory.newInstance(
-                        commentAddedEvent, config);
-            }
-            else if (event instanceof ReviewerAddedEvent)
-            {
-                ReviewerAddedEvent reviewerAddedEvent;
-                reviewerAddedEvent = (ReviewerAddedEvent) event;
+        messageGenerator = MessageGeneratorFactory.newInstance(commentAddedEvent, config);
+      } else if (event instanceof ReviewerAddedEvent) {
+        ReviewerAddedEvent reviewerAddedEvent;
+        reviewerAddedEvent = (ReviewerAddedEvent) event;
 
-                config = new ProjectConfig(configFactory,
-                        reviewerAddedEvent.change.get().project);
+        config = new ProjectConfig(configFactory, reviewerAddedEvent.change.get().project);
 
-                messageGenerator = MessageGeneratorFactory.newInstance(
-                        reviewerAddedEvent, config);
-            }
-            else if (event instanceof WorkInProgressStateChangedEvent)
-            {
-                WorkInProgressStateChangedEvent wipStateChangedEvent;
-                wipStateChangedEvent = (WorkInProgressStateChangedEvent) event;
+        messageGenerator = MessageGeneratorFactory.newInstance(reviewerAddedEvent, config);
+      } else if (event instanceof WorkInProgressStateChangedEvent) {
+        WorkInProgressStateChangedEvent wipStateChangedEvent;
+        wipStateChangedEvent = (WorkInProgressStateChangedEvent) event;
 
-                config = new ProjectConfig(configFactory,
-                        wipStateChangedEvent.change.get().project);
+        config = new ProjectConfig(configFactory, wipStateChangedEvent.change.get().project);
 
-                messageGenerator = MessageGeneratorFactory.newInstance(
-                        wipStateChangedEvent, config);
-            }
-            else
-            {
-                LOGGER.debug("Event " + event + " not currently supported");
+        messageGenerator = MessageGeneratorFactory.newInstance(wipStateChangedEvent, config);
+      } else {
+        LOGGER.debug("Event " + event + " not currently supported");
 
-                config = new ProjectConfig(configFactory, ALL_PROJECTS);
+        config = new ProjectConfig(configFactory, ALL_PROJECTS);
 
-                messageGenerator = MessageGeneratorFactory.newInstance(
-                        event, config);
-            }
+        messageGenerator = MessageGeneratorFactory.newInstance(event, config);
+      }
 
-            if (messageGenerator.shouldPublish())
-            {
-                WebhookClient client;
-                client = new WebhookClient();
+      if (messageGenerator.shouldPublish()) {
+        WebhookClient client;
+        client = new WebhookClient();
 
-                client.publish(messageGenerator.generate(),
-                        config.getWebhookUrl());
-            }
-        }
-        catch (Throwable e)
-        {
-            LOGGER.error("Event " + event + " processing failed", e);
-        }
+        client.publish(messageGenerator.generate(), config.getWebhookUrl());
+      }
+    } catch (Throwable e) {
+      LOGGER.error("Event " + event + " processing failed", e);
     }
+  }
 }
